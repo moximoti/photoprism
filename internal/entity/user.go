@@ -3,6 +3,7 @@ package entity
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -177,6 +178,18 @@ func FindUserByName(userName string) *User {
 	}
 }
 
+// FindUserByName returns an existing user or nil if not found.
+func DeleteUserByName(userName string) error {
+	if userName == "" {
+		return fmt.Errorf("can not delete user from db: empty username")
+	}
+
+	if err := Db().Where("user_name = ?", userName).Delete(&User{}).Error; err != nil {
+		return fmt.Errorf("user %s not found", txt.Quote(userName))
+	}
+	return nil
+}
+
 // FindUserByUID returns an existing user or nil if not found.
 func FindUserByUID(uid string) *User {
 	if uid == "" {
@@ -324,19 +337,45 @@ func (m *User) Role() acl.Role {
 	return acl.RoleDefault
 }
 
-func (m *User) CreateAndValidate() error {
-	return nil
+// Helper function to create user with password. Returns error if any property is invalid
+func (m *User) CreateAndValidate(allowInsecure bool) error {
+	m.Password = strings.TrimSpace(m.Password)
+	if err := m.Validate(allowInsecure); err != nil {
+		return err
+	}
+	return Db().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(m).Error; err != nil {
+			return err
+		}
+		pw := NewPassword(m.UserUID, m.Password)
+		if err := tx.Create(&pw).Error; err != nil {
+			return err
+		}
+		log.Debugf("created user '%v' with uid: %v", m.UserName, m.UserUID)
+		return nil
+	})
 }
 
-func (m *User) Validate() error {
+// Makes sure username is unique and password meets requirements. Returns error if any property is invalid
+func (m *User) Validate(allowInsecure bool) error {
 	if m.UserName == "" {
 		return errors.New("username must not be empty")
 	}
 	if len(m.UserName) < 4 {
 		return errors.New("username must be at least 4 characters")
 	}
-	if false { // check if username is not taken yet
-		return errors.New("username already taken")
+	if u := FindUserByName(m.UserName); u != nil { // check if username is not taken yet
+		return errors.New("user already exists")
+	}
+
+	if m.UserUID == "" && len(m.Password) < 4 {
+		// check if password too short
+		return errors.New("password is too short (at least 4 characters)")
+	}
+	matchesInsecure := false
+	if !allowInsecure && m.UserUID == "" && matchesInsecure {
+		// TODO check if password matches one of compromised list
+		return errors.New("insecure password")
 	}
 
 	return nil

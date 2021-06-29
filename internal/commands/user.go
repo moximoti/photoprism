@@ -51,9 +51,7 @@ var UserCommand = cli.Command{
 }
 
 func userCreate(ctx *cli.Context) error {
-	return withDependencies(ctx, func() error {
-
-		// TODO abstract logic for reuse -> entity/user
+	return withDependencies(ctx, func(conf *config.Config) error {
 
 		var newUser = entity.User{
 			RoleAdmin:    false,
@@ -81,37 +79,29 @@ func userCreate(ctx *cli.Context) error {
 				return err
 			}
 			newUser.UserName = strings.TrimSpace(text)
-			// TODO check if username is unique!!
-			if len(newUser.UserName) < 4 {
-				return errors.New("username must be at least 4 characters")
-			}
 		} else {
 			newUser.UserName = strings.TrimSpace(ctx.String("username"))
 		}
 
-		newPassword := ""
+		newUser.Password = ""
 		if ctx.String("password") == "" {
 			for {
-				log.Infof("please enter a new password for %s (at least 6 characters)\n", txt.Quote(newUser.UserName))
+				log.Infof("please enter a new password for %s (at least 4 characters)\n", txt.Quote(newUser.UserName))
 				pw := getPassword("New password: ")
-				if confirm := getPassword("Confirm password: "); confirm == pw && len(pw) >= 6 {
-					newPassword = pw
+				if confirm := getPassword("Confirm password: "); confirm == pw {
+					newUser.Password = pw
 					break
 				} else {
 					log.Infof("passwords did not match or too short. please try again\n")
 				}
 			}
 		} else {
-			newPassword = strings.TrimSpace(ctx.String("password"))
+			newUser.Password = strings.TrimSpace(ctx.String("password"))
 		}
 
-		if err := newUser.Create(); err != nil {
+		if err := newUser.CreateAndValidate(conf.Settings().Users.PasswordPolicy == config.PolicyNone); err != nil {
 			return err
 		}
-		if err := newUser.SetPassword(newPassword); err != nil {
-			return err
-		}
-
 		return nil
 	})
 }
@@ -124,7 +114,7 @@ func userList(ctx *cli.Context) error {
 	return errors.New("not implemented")
 }
 
-func withDependencies(ctx *cli.Context, f func() error) error {
+func withDependencies(ctx *cli.Context, f func(conf *config.Config) error) error {
 	conf := config.NewConfig(ctx)
 
 	_, cancel := context.WithCancel(context.Background())
@@ -137,7 +127,7 @@ func withDependencies(ctx *cli.Context, f func() error) error {
 	conf.InitDb()
 
 	// command is executed here
-	if err := f(); err != nil {
+	if err := f(conf); err != nil {
 		return err
 	}
 

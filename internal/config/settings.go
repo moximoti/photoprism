@@ -86,6 +86,17 @@ type DownloadSettings struct {
 	Name entity.DownloadName `json:"name" yaml:"Name"`
 }
 
+// UserSettings represents user management related settings.
+type UserSettings struct {
+	PasswordPolicy string `json:"passwordPolicy" yaml:"PasswordPolicy"` // "secure" or "lax"
+}
+
+const (
+	PolicyStrong = "strong"
+	PolicyLax    = "lax"
+	PolicyNone   = "none"
+)
+
 // Settings represents user settings for Web UI, indexing, and import.
 type Settings struct {
 	UI        UISettings       `json:"ui" yaml:"UI"`
@@ -96,6 +107,7 @@ type Settings struct {
 	Index     IndexSettings    `json:"index" yaml:"Index"`
 	Stack     StackSettings    `json:"stack" yaml:"Stack"`
 	Share     ShareSettings    `json:"share" yaml:"Share"`
+	Users     UserSettings     `json:"users" yaml:"Users"`
 	Download  DownloadSettings `json:"download" yaml:"Download"`
 }
 
@@ -152,6 +164,9 @@ func NewSettings() *Settings {
 		},
 		Share: ShareSettings{
 			Title: "",
+		},
+		Users: UserSettings{
+			PasswordPolicy: PolicyStrong,
 		},
 		Download: DownloadSettings{
 			Name: entity.DownloadNameDefault,
