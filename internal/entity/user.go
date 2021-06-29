@@ -183,9 +183,12 @@ func DeleteUserByName(userName string) error {
 	if userName == "" {
 		return fmt.Errorf("can not delete user from db: empty username")
 	}
-
-	if err := Db().Where("user_name = ?", userName).Delete(&User{}).Error; err != nil {
+	user := FindUserByName(userName)
+	if err := Db().Where("user_name = ?", userName).Delete(&User{}).Error; user == nil || err != nil {
 		return fmt.Errorf("user %s not found", txt.Quote(userName))
+	}
+	if err := Db().Where("uid = ?", user.UserUID).Delete(&Password{}).Error; err != nil {
+		log.Debug(err)
 	}
 	return nil
 }
@@ -204,6 +207,15 @@ func FindUserByUID(uid string) *User {
 		log.Debugf("user %s not found", txt.Quote(uid))
 		return nil
 	}
+}
+
+func AllUsers() []User {
+	var users []User
+	if err := Db().Find(&users).Error; err != nil {
+		log.Error(err)
+		return []User{}
+	}
+	return users
 }
 
 // String returns an identifier that can be used in logs.
@@ -340,7 +352,7 @@ func (m *User) Role() acl.Role {
 // Helper function to create user with password. Returns error if any property is invalid
 func (m *User) CreateAndValidate(allowInsecure bool) error {
 	m.Password = strings.TrimSpace(m.Password)
-	if err := m.Validate(allowInsecure); err != nil {
+	if err := m.validateNew(allowInsecure); err != nil {
 		return err
 	}
 	return Db().Transaction(func(tx *gorm.DB) error {
@@ -351,13 +363,13 @@ func (m *User) CreateAndValidate(allowInsecure bool) error {
 		if err := tx.Create(&pw).Error; err != nil {
 			return err
 		}
-		log.Debugf("created user '%v' with uid: %v", m.UserName, m.UserUID)
+		log.Infof("created user %v with uid %v", txt.Quote(m.UserName), txt.Quote(m.UserUID))
 		return nil
 	})
 }
 
 // Makes sure username is unique and password meets requirements. Returns error if any property is invalid
-func (m *User) Validate(allowInsecure bool) error {
+func (m *User) validateNew(allowInsecure bool) error {
 	if m.UserName == "" {
 		return errors.New("username must not be empty")
 	}

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
-	//"fmt"
+	"fmt"
 	"github.com/photoprism/photoprism/internal/config"
 	"github.com/photoprism/photoprism/internal/entity"
 	"github.com/photoprism/photoprism/pkg/txt"
@@ -38,12 +38,19 @@ var UserCommand = cli.Command{
 			},
 		},
 		{
-			Name:   "delete",
-			Usage:  "deletes user by username or email",
-			Action: userDelete,
+			Name:      "delete",
+			Usage:     "deletes user by username",
+			Action:    userDelete,
+			ArgsUsage: "takes username as argument",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "force, f",
+					Usage: "execute deletion",
+				},
+			},
 		},
 		{
-			Name:   "list, ls",
+			Name:   "list",
 			Usage:  "prints a list of all users",
 			Action: userList,
 		},
@@ -54,39 +61,41 @@ func userCreate(ctx *cli.Context) error {
 	return withDependencies(ctx, func(conf *config.Config) error {
 
 		var newUser = entity.User{
-			RoleAdmin:    false,
+			RoleAdmin:    true, // TODO change back to false when implementing access control
 			RoleGuest:    false,
 			UserDisabled: false,
 		}
 
+		if ctx.String("username") != "" && ctx.String("password") != "" {
+			log.Debugf("creating user in non-interactive mode")
+			newUser.FullName = strings.TrimSpace(ctx.String("fullname"))
+			newUser.UserName = strings.TrimSpace(ctx.String("username"))
+			newUser.Password = strings.TrimSpace(ctx.String("password"))
+		}
+
 		if ctx.String("fullname") == "" && ctx.String("username") == "" {
-			log.Infof("please enter full name: ")
+			fmt.Printf("please enter full name: ")
 			reader := bufio.NewReader(os.Stdin)
 			text, err := reader.ReadString('\n')
 			if err != nil {
 				return err
 			}
 			newUser.FullName = strings.TrimSpace(text)
-		} else {
-			newUser.FullName = strings.TrimSpace(ctx.String("fullname"))
 		}
 
 		if ctx.String("username") == "" {
-			log.Infof("please enter a username: ")
+			fmt.Printf("please enter a username: ")
 			reader := bufio.NewReader(os.Stdin)
 			text, err := reader.ReadString('\n')
 			if err != nil {
 				return err
 			}
 			newUser.UserName = strings.TrimSpace(text)
-		} else {
-			newUser.UserName = strings.TrimSpace(ctx.String("username"))
 		}
 
-		newUser.Password = ""
 		if ctx.String("password") == "" {
 			for {
-				log.Infof("please enter a new password for %s (at least 4 characters)\n", txt.Quote(newUser.UserName))
+				fmt.Printf("please enter a new password for %s (at least 4 characters)\n", txt.Quote(newUser.UserName))
 				pw := getPassword("New password: ")
 				if confirm := getPassword("Confirm password: "); confirm == pw {
 					newUser.Password = pw
@@ -95,8 +104,6 @@ func userCreate(ctx *cli.Context) error {
 					log.Infof("passwords did not match or too short. please try again\n")
 				}
 			}
-		} else {
-			newUser.Password = strings.TrimSpace(ctx.String("password"))
 		}
 
 		if err := newUser.CreateAndValidate(conf.Settings().Users.PasswordPolicy == config.PolicyNone); err != nil {
@@ -107,11 +114,41 @@ func userCreate(ctx *cli.Context) error {
 }
 
 func userDelete(ctx *cli.Context) error {
-	return errors.New("not implemented")
+	return withDependencies(ctx, func(conf *config.Config) error {
+		username := ctx.Args()[0]
+		if !ctx.Bool("force") {
+			user := entity.FindUserByName(username)
+			if user != nil {
+				log.Infof("found user %s with uid: %s. Use -f to perform actual deletion", user.UserName, user.UserUID)
+				return nil
+			}
+			return errors.New("user not found")
+		}
+		err := entity.DeleteUserByName(username)
+		if err != nil {
+			log.Errorf("%s", err)
+			return nil
+		}
+		log.Infof("sucessfully deleted %s", username)
+		return nil
+	})
 }
 
 func userList(ctx *cli.Context) error {
-	return errors.New("not implemented")
+	return withDependencies(ctx, func(conf *config.Config) error {
+		users := entity.AllUsers()
+		for _, user := range users {
+			//fmt.Printf("%s ", user.UserUID)
+			if user.UserName != "" {
+				fmt.Printf("%s ", user.UserName)
+			} else {
+				fmt.Printf("[%s]", user.FullName)
+			}
+			fmt.Printf("\n")
+		}
+		fmt.Printf("total users found: %v\n", len(users))
+		return nil
+	})
 }
 
 func withDependencies(ctx *cli.Context, f func(conf *config.Config) error) error {
