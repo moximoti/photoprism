@@ -139,12 +139,12 @@ func (m *User) Save() error {
 }
 
 // BeforeCreate creates a random UID if needed before inserting a new row to the database.
-func (m *User) BeforeCreate(scope *gorm.Scope) error {
+func (m *User) BeforeCreate(tx *gorm.DB) error {
 	if rnd.IsUID(m.UserUID, 'u') {
-		return nil
+		return errors.New("UserUID already present")
 	}
-
-	return scope.SetColumn("UserUID", rnd.PPID('u'))
+	m.UserUID = rnd.PPID('u')
+	return nil
 }
 
 // FirstOrCreateUser returns an existing row, inserts a new row or nil in case of errors.
