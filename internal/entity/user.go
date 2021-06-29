@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -70,6 +71,7 @@ type User struct {
 	CreatedAt      time.Time  `json:"CreatedAt" yaml:"-"`
 	UpdatedAt      time.Time  `json:"UpdatedAt" yaml:"-"`
 	DeletedAt      *time.Time `sql:"index" json:"DeletedAt,omitempty" yaml:"-"`
+	Password       string     `gorm:"-" json:"-" yaml:"-"`
 }
 
 // TableName the database table name.
@@ -320,4 +322,22 @@ func (m *User) Role() acl.Role {
 	}
 
 	return acl.RoleDefault
+}
+
+func (m *User) CreateAndValidate() error {
+	return nil
+}
+
+func (m *User) Validate() error {
+	if m.UserName == "" {
+		return errors.New("username must not be empty")
+	}
+	if len(m.UserName) < 4 {
+		return errors.New("username must be at least 4 characters")
+	}
+	if false { // check if username is not taken yet
+		return errors.New("username already taken")
+	}
+
+	return nil
 }
