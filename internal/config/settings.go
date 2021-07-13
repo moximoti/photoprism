@@ -88,13 +88,18 @@ type DownloadSettings struct {
 
 // UserSettings represents user management related settings.
 type UserSettings struct {
-	PasswordPolicy string `json:"passwordPolicy" yaml:"PasswordPolicy"` // "secure" or "lax"
+	PasswordPolicy       string `json:"passwordPolicy" yaml:"PasswordPolicy"`
+	Registration         string `json:"registration" yaml:"Registration"`
+	ConfirmationRequired bool   `json:"confirmationRequired" yaml:"ConfirmationRequired"`
 }
 
 const (
 	PolicyStrong = "strong"
 	PolicyLax    = "lax"
 	PolicyNone   = "none"
+	RegistrationEnabled = "enable"
+	RegistrationDisabled = "disable"
+	// RegistrationDomainOnly = "domainOnly" // TODO low prio
 )
 
 // Settings represents user settings for Web UI, indexing, and import.
@@ -167,6 +172,7 @@ func NewSettings() *Settings {
 		},
 		Users: UserSettings{
 			PasswordPolicy: PolicyStrong,
+			Registration:   RegistrationDisabled,
 		},
 		Download: DownloadSettings{
 			Name: entity.DownloadNameDefault,

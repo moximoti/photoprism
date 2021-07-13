@@ -4,6 +4,9 @@ var Permissions = ACL{
 	ResourceDefault: Roles{
 		RoleAdmin: Actions{ActionDefault: true},
 	},
+	ResourceAccounts: Roles{
+		RoleAdmin: Actions{ActionDefault: true},
+	},
 	ResourceConfig: Roles{
 		RoleAdmin: Actions{ActionDefault: true},
 		RoleGuest: Actions{ActionRead: true},

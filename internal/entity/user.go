@@ -67,12 +67,13 @@ type User struct {
 	ResetToken     string     `gorm:"type:VARBINARY(64);" json:"-" yaml:"-"`
 	ApiToken       string     `gorm:"column:api_token;type:VARBINARY(128);" json:"-" yaml:"-"`
 	ApiSecret      string     `gorm:"column:api_secret;type:VARBINARY(128);" json:"-" yaml:"-"`
+	Password       string     `gorm:"-" json:"-" yaml:"-"`
+	ExternalUID    string	  `gorm:"type:VARBINARY(255);column:external_uid" json:"-" yaml:"-"`
 	LoginAttempts  int        `json:"-" yaml:"-"`
 	LoginAt        *time.Time `json:"-" yaml:"-"`
 	CreatedAt      time.Time  `json:"CreatedAt" yaml:"-"`
 	UpdatedAt      time.Time  `json:"UpdatedAt" yaml:"-"`
 	DeletedAt      *time.Time `sql:"index" json:"DeletedAt,omitempty" yaml:"-"`
-	Password       string     `gorm:"-" json:"-" yaml:"-"`
 }
 
 // TableName the database table name.
@@ -376,7 +377,9 @@ func (m *User) validateNew(allowInsecure bool) error {
 	if len(m.UserName) < 4 {
 		return errors.New("username must be at least 4 characters")
 	}
-	if u := FindUserByName(m.UserName); u != nil { // check if username is not taken yet
+	var result = &User{}
+	if err := Db().Unscoped().Where("user_name = ?", m.UserName).First(result).Error; err != nil {
+		log.Debugf("User found: %s, %s, %s, %s", result.UserUID, result.UserName, result.PrimaryEmail, result.FullName)
 		return errors.New("user already exists")
 	}
 

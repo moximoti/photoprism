@@ -40,7 +40,7 @@ services:
       PHOTOPRISM_SITE_AUTHOR: "@photoprism_app"
       PHOTOPRISM_DEBUG: "true"
       PHOTOPRISM_READONLY: "false"
-      PHOTOPRISM_PUBLIC: "true"
+      PHOTOPRISM_PUBLIC: "false"
       PHOTOPRISM_EXPERIMENTAL: "true"
       PHOTOPRISM_SERVER_MODE: "debug"
       PHOTOPRISM_HTTP_HOST: "0.0.0.0"

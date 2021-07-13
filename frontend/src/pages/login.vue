@@ -19,7 +19,7 @@
                   browser-autocomplete="off"
                   color="secondary-dark"
                   class="input-name"
-                  placeholder="••••••••"
+                  placeholder="username"
               ></v-text-field>
             </v-flex>
             <v-flex xs12 class="pa-2">
@@ -47,6 +47,14 @@
                 <translate>Sign in</translate>
                 <v-icon :right="!rtl" :left="rtl" dark>login</v-icon>
               </v-btn>
+              <v-btn color="primary-button"
+                     class="white--text ml-0 action-confirm"
+                     depressed
+                     :disabled="loading"
+                     @click.stop="loginExternal">
+                <translate>Sign in with 'provider'</translate>
+                <v-icon :right="!rtl" :left="rtl" dark>login</v-icon>
+              </v-btn>
             </v-flex>
           </v-layout>
         </v-card-actions>
@@ -66,7 +74,7 @@ export default {
     return {
       loading: false,
       showPassword: false,
-      username: "admin",
+      username: "",
       password: "",
       siteDescription: c.siteDescription ? c.siteDescription : c.siteCaption,
       nextUrl: this.$route.params.nextUrl ? this.$route.params.nextUrl : "/",
@@ -86,6 +94,28 @@ export default {
           this.$router.push(this.nextUrl);
         }
       ).catch(() => this.loading = false);
+    },
+    loginExternal() {
+      this.loading = true;
+      let popup = window.open('/auth/external', "test");
+      window.onstorage = () => {
+        console.log("onstorage event fired");
+        let sid = window.localStorage.getItem('session_id');
+        let data = window.localStorage.getItem('data');
+        let config = window.localStorage.getItem('config');
+        if (sid === null || data === null || config === null) {
+          return;
+        }
+        console.log("sid = ", sid);
+        this.$session.setId(sid);
+        this.$session.setData(JSON.parse(data));
+        this.$session.setConfig(JSON.parse(config));
+        //this.$session.sendClientInfo();
+        this.loading = false;
+        this.$router.push(this.nextUrl);
+        //popup.close();
+        window.localStorage.removeItem('config');
+      };
     },
   }
 };

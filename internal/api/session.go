@@ -104,6 +104,7 @@ func SessionID(c *gin.Context) string {
 
 // Session returns the current session data.
 func Session(id string) session.Data {
+	// TODO no admin permissions for public instance
 	// Return fake admin session if site is public.
 	if service.Config().Public() {
 		return session.Data{User: entity.Admin}
