@@ -1,11 +1,6 @@
 package server
 
 import (
-	"github.com/photoprism/photoprism/internal/entity"
-	"github.com/photoprism/photoprism/internal/service"
-	"github.com/photoprism/photoprism/internal/session"
-	"golang.org/x/oauth2"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 
@@ -44,78 +39,70 @@ func registerRoutes(router *gin.Engine, conf *config.Config) {
 		c.HTML(http.StatusOK, "rainbow.tmpl", gin.H{"config": clientConfig})
 	})
 
-	// Redirect to external Identity Provider.
-	var (
-		oauthConfig = &oauth2.Config{
-			RedirectURL:    "http://localhost:2342/auth/callback",
-			ClientID:     "photoprism-dev",
-			ClientSecret: "341e8af4-4ed7-40cc-bd2c-b29a5e0cd40c",
-			Scopes:       []string{"profile", "email", "openid"},
-			Endpoint:     oauth2.Endpoint{
-				AuthURL:   "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/auth",
-				TokenURL:  "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/token",
-				AuthStyle: 0,
-			},
+	/*	// Redirect to external Identity Provider.
+		var (
+			oauthConfig = &oauth2.Config{
+				RedirectURL:    "http://localhost:2342/auth/callback",
+				ClientID:     "photoprism-dev",
+				ClientSecret: "341e8af4-4ed7-40cc-bd2c-b29a5e0cd40c",
+				Scopes:       []string{"profile", "email", "openid"},
+				Endpoint:     oauth2.Endpoint{
+					AuthURL:   "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/auth",
+					TokenURL:  "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/token",
+					AuthStyle: 0,
+				},
+			}
+			// Some random string, random for each request
+			oauthStateString = "random"
+		)
+		if service.Config().Settings().Auth.AuthProvider == config.ProviderNone {
+
 		}
-		// Some random string, random for each request
-		oauthStateString = "random"
-	)
-	//var store map[string]chan string
-	router.GET("/auth/external", func(c *gin.Context) {
-		//clientConfig := conf.PublicConfig()
-		//randomIdentifier := "fsado8yghtfds9hy5r"
-		url := oauthConfig.AuthCodeURL(oauthStateString)
-		log.Infof("External Auth Url %s", url)
-		//c.Header("X-Session-Wait", oauthStateString)
-		c.Redirect(http.StatusTemporaryRedirect, url)
+		router.GET("/auth/external", func(c *gin.Context) {
+		})
+		router.GET("/auth/callback", func(c *gin.Context) {
+			//clientConfig := conf.PublicConfig()
+			//randomIdentifier := "fsado8yghtfds9hy5r"
+			st := c.Query("state") //c.PostForm("state")
+			log.Infof("State from Callback %s", st)
+			if st != oauthStateString {
+				log.Errorf("callback not valid")
+			}
+			token, err := oauthConfig.Exchange(c, c.Query("code"))
 
-	})
-	router.GET("/auth/session", func(c *gin.Context) {
-    	c.Query("wait")
-	})
-	router.GET("/auth/callback", func(c *gin.Context) {
-		//clientConfig := conf.PublicConfig()
-		//randomIdentifier := "fsado8yghtfds9hy5r"
-		st := c.Query("state") //c.PostForm("state")
-		log.Infof("State from Callback %s", st)
-		if st != oauthStateString {
-			log.Errorf("callback not valid")
-		}
-		token, err := oauthConfig.Exchange(c, c.Query("code"))
+			if err != nil {
+				log.Errorf("couldn't get token")
+			}
+			log.Infof("Access Token\n%s\n", token.AccessToken)
+			log.Infof("Refresh Token\n%s\n", token.RefreshToken)
+			log.Infof("ID Token\n%s\n", token.Extra("id_token"))
+			log.Infof("Token valid\n%v\n", token.Valid())
 
-		if err != nil {
-			log.Errorf("couldn't get token")
-		}
-		log.Infof("Access Token\n%s\n", token.AccessToken)
-		log.Infof("Refresh Token\n%s\n", token.RefreshToken)
-		log.Infof("ID Token\n%s\n", token.Extra("id_token"))
-		log.Infof("Token valid\n%v\n", token.Valid())
+			client := &http.Client{}
+			req, _ := http.NewRequest(http.MethodGet, "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/userinfo", nil)
+			req.Header.Add("Authorization", "Bearer "+token.AccessToken)
+			//token.SetAuthHeader(req)
+			res, err := client.Do(req)
+			if err != nil {
+				log.Errorf("UserInfo: %s", err)
+			}
+			defer res.Body.Close()
+			contents, _ := ioutil.ReadAll(res.Body)
+			log.Infof("UserInfo: %s", contents)
 
-		client := &http.Client{}
-		req, _ := http.NewRequest(http.MethodGet, "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/userinfo", nil)
-		req.Header.Add("Authorization", "Bearer "+token.AccessToken)
-		//token.SetAuthHeader(req)
-		res, err := client.Do(req)
-		if err != nil {
-			log.Errorf("UserInfo: %s", err)
-		}
-		defer res.Body.Close()
-		contents, _ := ioutil.ReadAll(res.Body)
-		log.Infof("UserInfo: %s", contents)
+			// if token.Valid() then retrieve User with matching external UID
+			// if token not valid, show error message
+			// if no user found start linkUser/newUser flow by setting flag in localstorage
+			// if user found return new session, set it in browser localstorage and close popup
+			var data = session.Data{}
+			data.User = *entity.FindUserByName("timo008")
+			id := service.Session().Create(data)
 
-		// if token.Valid() then retrieve User with matching external UID
-		// if token not valid, show error message
-		// if no user found start linkUser/newUser flow by setting flag in localstorage
-		// if user found return new session, set it in browser localstorage and close popup
-		var data = session.Data{}
-		data.User = *entity.FindUserByName("timo008")
-		id := service.Session().Create(data)
-
-		//c.Data(http.StatusOK, "application/json", contents)
-		//clientConfig := conf.PublicConfig()
-		c.HTML(http.StatusOK, "callback.tmpl", gin.H{"status": "ok", "id": id, "data": data, "config": conf.UserConfig()})
-	})
-
+			//c.Data(http.StatusOK, "application/json", contents)
+			//clientConfig := conf.PublicConfig()
+			c.HTML(http.StatusOK, "callback.tmpl", gin.H{"status": "ok", "id": id, "data": data, "config": conf.UserConfig()})
+		})
+	*/
 	// JSON-REST API Version 1
 	v1 := router.Group(conf.BaseUri(config.ApiUri))
 	{
@@ -220,6 +207,8 @@ func registerRoutes(router *gin.Engine, conf *config.Config) {
 		api.GetSvg(v1)
 
 		api.Websocket(v1)
+
+		api.AuthEndpoints(v1)
 	}
 
 	// Configure link sharing.

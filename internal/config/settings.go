@@ -94,13 +94,43 @@ type UserSettings struct {
 }
 
 const (
-	PolicyStrong = "strong"
-	PolicyLax    = "lax"
-	PolicyNone   = "none"
-	RegistrationEnabled = "enable"
+	PolicyStrong         = "strong"
+	PolicyLax            = "lax"
+	PolicyNone           = "none"
+	RegistrationEnabled  = "enable"
 	RegistrationDisabled = "disable"
 	// RegistrationDomainOnly = "domainOnly" // TODO low prio
 )
+
+// AuthSettings represents authentication related settings.
+type AuthSettings struct {
+	AuthProvider          string `json:"authProvider" yaml:"AuthProvider"`
+	ClientId              string `json:"clientId" yaml:"ClientID"`
+	ClientSecret          string `json:"clientSecret" yaml:"ClientSecret"`
+	DiscoveryEndpoint     string `json:"discoveryEndpoint" yaml:"DiscoveryEndpoint"`
+	AuthorizationEndpoint string `json:"authorizationEndpoint" yaml:"AuthorizationEndpoint"`
+	TokenEndpoint         string `json:"tokenEndpoint" yaml:"TokenEndpoint"`
+}
+
+const (
+	ProviderNone   = "none"
+	ProviderOidc   = "oidc"
+	ProviderGoogle = "google"
+	ProviderGithub = "github"
+)
+
+func (a *AuthSettings) GetProviderName() string {
+	switch a.AuthProvider {
+	case ProviderOidc:
+		return "OpenID Connect"
+	case ProviderGoogle:
+		return "Google"
+	case ProviderGithub:
+		return "Github"
+	default:
+		return a.AuthProvider
+	}
+}
 
 // Settings represents user settings for Web UI, indexing, and import.
 type Settings struct {
@@ -112,8 +142,9 @@ type Settings struct {
 	Index     IndexSettings    `json:"index" yaml:"Index"`
 	Stack     StackSettings    `json:"stack" yaml:"Stack"`
 	Share     ShareSettings    `json:"share" yaml:"Share"`
-	Users     UserSettings     `json:"users" yaml:"Users"`
 	Download  DownloadSettings `json:"download" yaml:"Download"`
+	Users     UserSettings     `json:"users" yaml:"Users"`
+	Auth      AuthSettings     `json:"auth" yaml:"Auth"`
 }
 
 // NewSettings creates a new Settings instance.
@@ -170,12 +201,15 @@ func NewSettings() *Settings {
 		Share: ShareSettings{
 			Title: "",
 		},
+		Download: DownloadSettings{
+			Name: entity.DownloadNameDefault,
+		},
 		Users: UserSettings{
 			PasswordPolicy: PolicyStrong,
 			Registration:   RegistrationDisabled,
 		},
-		Download: DownloadSettings{
-			Name: entity.DownloadNameDefault,
+		Auth: AuthSettings{
+			AuthProvider: ProviderNone,
 		},
 	}
 }

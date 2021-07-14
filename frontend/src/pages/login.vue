@@ -52,7 +52,7 @@
                      depressed
                      :disabled="loading"
                      @click.stop="loginExternal">
-                <translate>Sign in with 'provider'</translate>
+                <translate>Sign in with {{ authProvider }}</translate>
                 <v-icon :right="!rtl" :left="rtl" dark>login</v-icon>
               </v-btn>
             </v-flex>
@@ -70,13 +70,21 @@ export default {
   name: 'Login',
   data() {
     const c = this.$config.values;
-
+    const authProviderFull = () => {
+      switch (c.authProvider) {
+        case "oidc": return "OpenID Connect";
+        case "github": return "Github";
+        case "google": return "Google";
+        default: return "External Provider";
+      }
+    };
     return {
       loading: false,
       showPassword: false,
       username: "",
       password: "",
       siteDescription: c.siteDescription ? c.siteDescription : c.siteCaption,
+      authProvider: authProviderFull(),
       nextUrl: this.$route.params.nextUrl ? this.$route.params.nextUrl : "/",
       rtl: this.$rtl,
     };
@@ -97,12 +105,19 @@ export default {
     },
     loginExternal() {
       this.loading = true;
-      let popup = window.open('/auth/external', "test");
+      let popup = window.open('api/v1/auth/external', "test");
+      const onstorage = window.onstorage;
       window.onstorage = () => {
-        console.log("onstorage event fired");
-        let sid = window.localStorage.getItem('session_id');
-        let data = window.localStorage.getItem('data');
-        let config = window.localStorage.getItem('config');
+        const sid = window.localStorage.getItem('session_id');
+        const data = window.localStorage.getItem('data');
+        const config = window.localStorage.getItem('config');
+        const error = window.localStorage.getItem('auth_error');
+        if (error === "authentication failed") {
+          window.localStorage.removeItem('config');
+          window.localStorage.removeItem('auth_error');
+          window.onstorage = onstorage;
+          return;
+        }
         if (sid === null || data === null || config === null) {
           return;
         }
@@ -113,8 +128,10 @@ export default {
         //this.$session.sendClientInfo();
         this.loading = false;
         this.$router.push(this.nextUrl);
-        //popup.close();
+        popup.close();
         window.localStorage.removeItem('config');
+        window.localStorage.removeItem('auth_error');
+        window.onstorage = onstorage;
       };
     },
   }

@@ -57,6 +57,7 @@ type ClientConfig struct {
 	Categories      []CategoryLabel     `json:"categories"`
 	Clip            int                 `json:"clip"`
 	Server          RuntimeInfo         `json:"server"`
+	AuthProvider    string              `json:"authProvider"`
 }
 
 // ClientDisable represents disabled client features a user can't turn back on.
@@ -201,6 +202,7 @@ func (c *Config) PublicConfig() ClientConfig {
 		Clip:            txt.ClipDefault,
 		PreviewToken:    "public",
 		DownloadToken:   "public",
+		AuthProvider:    c.Settings().Auth.AuthProvider,
 	}
 
 	return result
@@ -263,6 +265,7 @@ func (c *Config) GuestConfig() ClientConfig {
 		CSSHash:         fs.Checksum(c.BuildPath() + "/share.css"),
 		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
 		Clip:            txt.ClipDefault,
+		AuthProvider:    c.Settings().Auth.AuthProvider,
 	}
 
 	return result
@@ -319,6 +322,7 @@ func (c *Config) UserConfig() ClientConfig {
 		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
 		Clip:            txt.ClipDefault,
 		Server:          NewRuntimeInfo(),
+		AuthProvider:    c.Settings().Auth.AuthProvider,
 	}
 
 	c.Db().
