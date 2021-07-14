@@ -72,7 +72,7 @@ export default {
     const c = this.$config.values;
     const authProviderFull = () => {
       switch (c.authProvider) {
-        case "oidc": return "OpenID Connect";
+        case "openid-connect": return "OpenID Connect";
         case "github": return "Github";
         case "google": return "Google";
         default: return "External Provider";

@@ -10,7 +10,7 @@ require (
 	github.com/dsoprea/go-heic-exif-extractor v0.0.0-20210512044107-62067e44c235
 	github.com/dsoprea/go-iptc v0.0.0-20200610044640-bc9ca208b413 // indirect
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20210512043942-b434301c6836
-	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
+	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd
 	github.com/dsoprea/go-photoshop-info-format v0.0.0-20200610045659-121dd752914d // indirect
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/dsoprea/go-tiff-image-structure v0.0.0-20210512044046-dc78da6a809b
@@ -24,7 +24,7 @@ require (
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/open-location-code/go v0.0.0-20210504205230-1796878d947c
-	github.com/gorilla/sessions v1.2.1
+	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/gosimple/slug v1.9.0
 	github.com/h2non/filetype v1.1.1
@@ -65,7 +65,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
+	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	gopkg.in/ugjka/go-tz.v2 v2.0.12
 	gopkg.in/yaml.v2 v2.4.0

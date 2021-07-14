@@ -2,69 +2,65 @@ package authn
 
 import (
 	"errors"
-	"github.com/gorilla/sessions"
+	log "github.com/dsoprea/go-logging"
 	"github.com/markbates/goth"
-	"github.com/photoprism/photoprism/internal/authn/provider"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/openidConnect"
+	"github.com/photoprism/photoprism/internal/config"
 	"github.com/photoprism/photoprism/internal/service"
-	"golang.org/x/oauth2"
 	"net/http"
-	"os"
 )
 
 const callbackUrl = "http://localhost:2342/api/v1/auth/callback"
 
-//var (
-//	OauthConfig = &oauth2.Config{
-//		RedirectURL:    callbackUrl,
-//		ClientID:     "photoprism-dev",
-//		ClientSecret: "341e8af4-4ed7-40cc-bd2c-b29a5e0cd40c",
-//		Scopes:       []string{"profile", "email", "openid"},
-//		Endpoint:     oauth2.Endpoint{
-//			AuthURL:   "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/auth",
-//			TokenURL:  "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/token",
-//			AuthStyle: 0,
-//		},
-//	}
-//	// Some random string, random for each request
-//	OauthStateString = "random"
-//)
-var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-
-var authProvider Provider
-
 func Init() {
 	authConf := service.Config().Settings().Auth
 	//providerString := authConf.AuthProvider
-	authProvider, _ = provider.NewOidc(authConf, callbackUrl)
-}
-
-func StartAuthFlow(res http.ResponseWriter, req *http.Request) (string, error) {
-	state := "randomsstate"
-	// TODO: randomize state parameter and implement some kind of session to glue StartAuthFlow and FinalizeAuth together
-
-	if url, err := authProvider.AuthCodeURL(state); err != nil {
-		return "", err
-	} else {
-		return url, nil
+	err := setGothProvider(authConf)
+	if err != nil {
+		log.Errorf(err.Error())
+	}
+	gothic.GetProviderName = func(req *http.Request) (string, error) {
+		return authConf.AuthProvider, nil
 	}
 }
 
-func FinalizeAuthFlow(res http.ResponseWriter, req *http.Request) (ExternalUser, error) {
-
-}
-
-type FlowStateCache map[string]FlowState
-
-var flowStore FlowStateCache
-
-func (c FlowStateCache) Set(key string, value FlowState) error {
-	c[key] = value
-	return nil
-}
-
-func (c FlowStateCache) Get(key string) (FlowState, error) {
-	if res, ok := c[key]; ok {
-		return res, nil
+func setGothProvider(as config.AuthSettings) error {
+	switch as.AuthProvider {
+	case config.ProviderOidc:
+		// OpenID Connect is based on OpenID Connect Auto Discovery URL (https://openid.net/specs/openid-connect-discovery-1_0-17.html)
+		// because the OpenID Connect provider initialize it self in the New(), it can return an error which should be handled or ignored
+		// ignore the error for now
+		openidConnect, err := openidConnect.New(as.ClientId, as.ClientSecret, callbackUrl, as.DiscoveryEndpoint)
+		if openidConnect != nil {
+			goth.UseProviders(openidConnect)
+		}
+		return err
+	case config.ProviderGoogle:
+		return nil
+	case config.ProviderGithub:
+		return nil
+	default:
+		return errors.New("no provider selected")
 	}
-	return nil, errors.New("no cached flow state")
+
+}
+
+// StartAuthFlow must be called when external authentication is requested
+func StartAuthFlow(res http.ResponseWriter, req *http.Request) error {
+	url, err := gothic.GetAuthURL(res, req)
+	if err == nil {
+		http.Redirect(res, req, url, http.StatusTemporaryRedirect)
+	}
+	return err
+}
+
+// FinalizeAuthFlow must be called on provider callback
+func FinalizeAuthFlow(res http.ResponseWriter, req *http.Request) (goth.User, error) {
+	user, err := gothic.CompleteUserAuth(res, req)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }

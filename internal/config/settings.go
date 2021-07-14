@@ -114,23 +114,23 @@ type AuthSettings struct {
 
 const (
 	ProviderNone   = "none"
-	ProviderOidc   = "oidc"
+	ProviderOidc   = "openid-connect"
 	ProviderGoogle = "google"
 	ProviderGithub = "github"
 )
 
-func (a *AuthSettings) GetProviderName() string {
-	switch a.AuthProvider {
-	case ProviderOidc:
-		return "OpenID Connect"
-	case ProviderGoogle:
-		return "Google"
-	case ProviderGithub:
-		return "Github"
-	default:
-		return a.AuthProvider
-	}
-}
+//func (a *AuthSettings) GetProviderName() string {
+//	switch a.AuthProvider {
+//	case ProviderOidc:
+//		return "OpenID Connect"
+//	case ProviderGoogle:
+//		return "Google"
+//	case ProviderGithub:
+//		return "Github"
+//	default:
+//		return a.AuthProvider
+//	}
+//}
 
 // Settings represents user settings for Web UI, indexing, and import.
 type Settings struct {

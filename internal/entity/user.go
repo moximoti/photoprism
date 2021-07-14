@@ -68,7 +68,7 @@ type User struct {
 	ApiToken       string     `gorm:"column:api_token;type:VARBINARY(128);" json:"-" yaml:"-"`
 	ApiSecret      string     `gorm:"column:api_secret;type:VARBINARY(128);" json:"-" yaml:"-"`
 	Password       string     `gorm:"-" json:"-" yaml:"-"`
-	ExternalUID    string	  `gorm:"type:VARBINARY(255);column:external_uid" json:"-" yaml:"-"`
+	ExternalUID    string     `gorm:"size:255;column:external_uid;" json:"-" yaml:"-"`
 	LoginAttempts  int        `json:"-" yaml:"-"`
 	LoginAt        *time.Time `json:"-" yaml:"-"`
 	CreatedAt      time.Time  `json:"CreatedAt" yaml:"-"`
@@ -206,6 +206,23 @@ func FindUserByUID(uid string) *User {
 		return &result
 	} else {
 		log.Debugf("user %s not found", txt.Quote(uid))
+		return nil
+	}
+}
+
+// FindUserByExternalUID returns an existing user or nil if not found.
+func FindUserByExternalUID(uid string) *User {
+	if uid == "" {
+		return nil
+	}
+
+	result := User{}
+
+	if err := Db().Preload("Address").Where("external_uid = ?", uid).First(&result).Error; err == nil {
+		return &result
+	} else {
+		log.Debugf("no user with external_uid %s found", txt.Quote(uid))
+		log.Debugf(err.Error())
 		return nil
 	}
 }
@@ -378,8 +395,9 @@ func (m *User) validateNew(allowInsecure bool) error {
 		return errors.New("username must be at least 4 characters")
 	}
 	var result = &User{}
-	if err := Db().Unscoped().Where("user_name = ?", m.UserName).First(result).Error; err != nil {
+	if err := Db().Unscoped().Where("user_name = ?", m.UserName).First(result).Error; err == nil {
 		log.Debugf("User found: %s, %s, %s, %s", result.UserUID, result.UserName, result.PrimaryEmail, result.FullName)
+		//log.Error(err.Error())
 		return errors.New("user already exists")
 	}
 
