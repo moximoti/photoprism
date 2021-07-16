@@ -12,7 +12,9 @@ import (
 // GET /api/v1/auth/external
 func AuthEndpoints(router *gin.RouterGroup) {
 	conf := service.Config()
-	authn.Init()
+	if err := authn.Init(); err != nil {
+		log.Errorf(err.Error())
+	}
 
 	router.GET("/auth/external", func(c *gin.Context) {
 		err := authn.StartAuthFlow(c.Writer, c.Request)
@@ -35,6 +37,13 @@ func AuthEndpoints(router *gin.RouterGroup) {
 			user = entity.FindUserByName("timo008")
 			log.Infof("no user found. using %s", user.UserName)
 			log.Infof("!!! redirect to registration not implemented yet !!!")
+
+			c.Redirect(http.StatusTemporaryRedirect, "/register?email=xyz&flowid=random")
+			//c.HTML(http.StatusOK, "callback.tmpl", gin.H{
+			//	"status": "ok",
+			//	"config": conf.UserConfig(),
+			//})
+			return
 		}
 		log.Infof("user '%s' logged in", user.UserName)
 		var data = session.Data{
