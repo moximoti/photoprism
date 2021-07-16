@@ -39,6 +39,7 @@ import People from "pages/people.vue";
 import Library from "pages/library.vue";
 import Settings from "pages/settings.vue";
 import Login from "pages/login.vue";
+import Register from "pages/register.vue";
 import Discover from "pages/discover.vue";
 import About from "pages/about/about.vue";
 import Feedback from "pages/about/feedback.vue";
@@ -85,6 +86,19 @@ export default [
     name: "login",
     path: "/login",
     component: Login,
+    meta: { title: siteTitle, auth: false },
+    beforeEnter: (to, from, next) => {
+      if (session.isUser()) {
+        next({ name: "home" });
+      } else {
+        next();
+      }
+    },
+  },
+  {
+    name: "register",
+    path: "/register",
+    component: Register,
     meta: { title: siteTitle, auth: false },
     beforeEnter: (to, from, next) => {
       if (session.isUser()) {
