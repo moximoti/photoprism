@@ -2,49 +2,57 @@ package authn
 
 import (
 	"errors"
+	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/openidConnect"
-	"github.com/photoprism/photoprism/internal/config"
-	"github.com/photoprism/photoprism/internal/service"
 	"github.com/photoprism/photoprism/pkg/rnd"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 )
 
-const callbackUrl = "http://localhost:2342/api/v1/auth/callback"
+type authnConfig interface {
+	ClientID() string
+	ClientSecret() string
+	AuthProvider() string
+	CallbackUrl() string
+	DiscoveryEndpoint() string
+}
 
-func Init() error {
-	authConf := service.Config().Settings().Auth
-	if "" == os.Getenv("SESSION_SECRET") {
-		os.Setenv("SESSION_SECRET", rnd.UUID())
-	}
-	//providerString := authConf.AuthProvider
+func Init(authConf authnConfig) error {
+	//authConf := service.Config().AuthConfig()
 	err := setGothProvider(authConf)
 	if err != nil {
 		return err
 	}
 	gothic.GetProviderName = func(req *http.Request) (string, error) {
-		return authConf.AuthProvider, nil
+		return authConf.AuthProvider(), nil
 	}
+	gothic.Store = sessions.NewCookieStore([]byte(rnd.UUID()))
 	return nil
 }
 
-func setGothProvider(as config.AuthSettings) error {
-	switch as.AuthProvider {
-	case config.ProviderOidc:
+const (
+	ProviderNone   = "none"
+	ProviderOidc   = "openid-connect"
+	ProviderGoogle = "google"
+	ProviderGithub = "github"
+)
+
+func setGothProvider(ac authnConfig) error {
+	switch ac.AuthProvider() {
+	case ProviderOidc:
 		// OpenID Connect is based on OpenID Connect Auto Discovery URL (https://openid.net/specs/openid-connect-discovery-1_0-17.html)
 		// because the OpenID Connect provider initialize it self in the New(), it can return an error which should be handled or ignored
 		// ignore the error for now
-		oidc, err := openidConnect.New(as.ClientId, as.ClientSecret, callbackUrl, as.DiscoveryEndpoint)
+		oidc, err := openidConnect.New(ac.ClientID(), ac.ClientSecret(), ac.CallbackUrl(), ac.DiscoveryEndpoint())
 		if oidc != nil {
 			goth.UseProviders(oidc)
 		}
 		return err
-	case config.ProviderGoogle:
+	case ProviderGoogle:
 		return nil
-	case config.ProviderGithub:
+	case ProviderGithub:
 		return nil
 	default:
 		return errors.New("no provider selected")

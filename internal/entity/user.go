@@ -367,10 +367,20 @@ func (m *User) Role() acl.Role {
 	return acl.RoleDefault
 }
 
+type userConf interface {
+	PasswordPolicy() string
+}
+
+const (
+	PolicyStrong = "strong"
+	PolicyLax    = "lax"
+	PolicyNone   = "none"
+)
+
 // Helper function to create user with password. Returns error if any property is invalid
-func (m *User) CreateAndValidate(allowInsecure bool) error {
+func (m *User) CreateAndValidate(conf userConf) error {
 	m.Password = strings.TrimSpace(m.Password)
-	if err := m.validateNew(allowInsecure); err != nil {
+	if err := m.validateNew(conf); err != nil {
 		return err
 	}
 	return Db().Transaction(func(tx *gorm.DB) error {
@@ -387,7 +397,7 @@ func (m *User) CreateAndValidate(allowInsecure bool) error {
 }
 
 // Makes sure username is unique and password meets requirements. Returns error if any property is invalid
-func (m *User) validateNew(allowInsecure bool) error {
+func (m *User) validateNew(conf userConf) error {
 	if m.UserName == "" {
 		return errors.New("username must not be empty")
 	}
@@ -395,21 +405,32 @@ func (m *User) validateNew(allowInsecure bool) error {
 		return errors.New("username must be at least 4 characters")
 	}
 	var result = &User{}
-	if err := Db().Unscoped().Where("user_name = ?", m.UserName).First(result).Error; err == nil {
+	if err := Db().Unscoped().Where("user_name = ? OR primary_email = ?", m.UserName, m.PrimaryEmail).First(result).Error; err == nil {
 		log.Debugf("User found: %s, %s, %s, %s", result.UserUID, result.UserName, result.PrimaryEmail, result.FullName)
 		//log.Error(err.Error())
-		return errors.New("user already exists")
+		return errors.New("username or email already exists")
 	}
 
 	if m.UserUID == "" && len(m.Password) < 4 {
 		// check if password too short
 		return errors.New("password is too short (at least 4 characters)")
 	}
-	matchesInsecure := false
-	if !allowInsecure && m.UserUID == "" && matchesInsecure {
-		// TODO check if password matches one of compromised list
+	if m.UserUID == "" && m.isPasswordSecure(conf) {
 		return errors.New("insecure password")
 	}
 
 	return nil
+}
+
+func (m *User) isPasswordSecure(conf userConf) bool {
+	switch conf.PasswordPolicy() {
+	case PolicyNone:
+		return true
+	case PolicyLax:
+		fallthrough
+	case PolicyStrong:
+		return true // TODO: implement password policies
+	default:
+		return false
+	}
 }

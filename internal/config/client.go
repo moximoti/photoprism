@@ -202,7 +202,7 @@ func (c *Config) PublicConfig() ClientConfig {
 		Clip:            txt.ClipDefault,
 		PreviewToken:    "public",
 		DownloadToken:   "public",
-		AuthProvider:    c.Settings().Auth.AuthProvider,
+		AuthProvider:    c.AuthConfig().AuthProvider(),
 	}
 
 	return result
@@ -265,7 +265,7 @@ func (c *Config) GuestConfig() ClientConfig {
 		CSSHash:         fs.Checksum(c.BuildPath() + "/share.css"),
 		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
 		Clip:            txt.ClipDefault,
-		AuthProvider:    c.Settings().Auth.AuthProvider,
+		AuthProvider:    c.AuthConfig().AuthProvider(),
 	}
 
 	return result
@@ -322,7 +322,7 @@ func (c *Config) UserConfig() ClientConfig {
 		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
 		Clip:            txt.ClipDefault,
 		Server:          NewRuntimeInfo(),
-		AuthProvider:    c.Settings().Auth.AuthProvider,
+		AuthProvider:    c.AuthConfig().AuthProvider(),
 	}
 
 	c.Db().

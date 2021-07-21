@@ -12,7 +12,7 @@ import (
 // GET /api/v1/auth/external
 func AuthEndpoints(router *gin.RouterGroup) {
 	conf := service.Config()
-	if err := authn.Init(); err != nil {
+	if err := authn.Init(conf.AuthConfig()); err != nil {
 		log.Errorf(err.Error())
 	}
 

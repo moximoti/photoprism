@@ -86,52 +86,6 @@ type DownloadSettings struct {
 	Name entity.DownloadName `json:"name" yaml:"Name"`
 }
 
-// UserSettings represents user management related settings.
-type UserSettings struct {
-	PasswordPolicy       string `json:"passwordPolicy" yaml:"PasswordPolicy"`
-	Registration         string `json:"registration" yaml:"Registration"`
-	ConfirmationRequired bool   `json:"confirmationRequired" yaml:"ConfirmationRequired"`
-}
-
-const (
-	PolicyStrong         = "strong"
-	PolicyLax            = "lax"
-	PolicyNone           = "none"
-	RegistrationEnabled  = "enable"
-	RegistrationDisabled = "disable"
-	// RegistrationDomainOnly = "domainOnly" // TODO low prio
-)
-
-// AuthSettings represents authentication related settings.
-type AuthSettings struct {
-	AuthProvider          string `json:"authProvider" yaml:"AuthProvider"`
-	ClientId              string `json:"clientId" yaml:"ClientID"`
-	ClientSecret          string `json:"clientSecret" yaml:"ClientSecret"`
-	DiscoveryEndpoint     string `json:"discoveryEndpoint" yaml:"DiscoveryEndpoint"`
-	AuthorizationEndpoint string `json:"authorizationEndpoint" yaml:"AuthorizationEndpoint"`
-	TokenEndpoint         string `json:"tokenEndpoint" yaml:"TokenEndpoint"`
-}
-
-const (
-	ProviderNone   = "none"
-	ProviderOidc   = "openid-connect"
-	ProviderGoogle = "google"
-	ProviderGithub = "github"
-)
-
-//func (a *AuthSettings) GetProviderName() string {
-//	switch a.AuthProvider {
-//	case ProviderOidc:
-//		return "OpenID Connect"
-//	case ProviderGoogle:
-//		return "Google"
-//	case ProviderGithub:
-//		return "Github"
-//	default:
-//		return a.AuthProvider
-//	}
-//}
-
 // Settings represents user settings for Web UI, indexing, and import.
 type Settings struct {
 	UI        UISettings       `json:"ui" yaml:"UI"`
@@ -143,8 +97,6 @@ type Settings struct {
 	Stack     StackSettings    `json:"stack" yaml:"Stack"`
 	Share     ShareSettings    `json:"share" yaml:"Share"`
 	Download  DownloadSettings `json:"download" yaml:"Download"`
-	Users     UserSettings     `json:"users" yaml:"Users"`
-	Auth      AuthSettings     `json:"auth" yaml:"Auth"`
 }
 
 // NewSettings creates a new Settings instance.
@@ -203,13 +155,6 @@ func NewSettings() *Settings {
 		},
 		Download: DownloadSettings{
 			Name: entity.DownloadNameDefault,
-		},
-		Users: UserSettings{
-			PasswordPolicy: PolicyStrong,
-			Registration:   RegistrationDisabled,
-		},
-		Auth: AuthSettings{
-			AuthProvider: ProviderNone,
 		},
 	}
 }

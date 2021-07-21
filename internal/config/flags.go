@@ -414,4 +414,52 @@ var GlobalFlags = []cli.Flag{
 		Value:  92,
 		EnvVar: "PHOTOPRISM_JPEG_QUALITY",
 	},
+
+	cli.BoolFlag{
+		Name:   "disable-registration",
+		Usage:  "enable dynamic thumbnail rendering (high memory and cpu usage)",
+		EnvVar: "PHOTOPRISM_DISABLE_REGISTRATION",
+	},
+	//cli.StringFlag{
+	//	Name:   "password-policy",
+	//	Usage:  "",
+	//	Value:  "",
+	//	EnvVar: "PHOTOPRISM_PASSWORD_POLICY",
+	//},
+	cli.StringFlag{
+		Name:   "client-id",
+		Usage:  "OAuth2 client id",
+		Value:  "",
+		EnvVar: "PHOTOPRISM_CLIENT_ID",
+	},
+	cli.StringFlag{
+		Name:   "client-secret",
+		Usage:  "OAuth2 client secret",
+		Value:  "",
+		EnvVar: "PHOTOPRISM_CLIENT_SECRET",
+	},
+	//cli.StringFlag{
+	//	Name:   "auth-endpoint",
+	//	Usage:  "OAuth2 Token Enpoint URL (not necessary if using OIDC or for most public providers)",
+	//	Value:  "",
+	//	EnvVar: "PHOTOPRISM_AUTH_ENDPOINT",
+	//},
+	//cli.StringFlag{
+	//	Name:   "token-endpoint",
+	//	Usage:  "OAuth2 Token Enpoint URL (not necessary if using OIDC or for most public providers)",
+	//	Value:  "",
+	//	EnvVar: "PHOTOPRISM_TOKEN_ENDPOINT",
+	//},
+	cli.StringFlag{
+		Name:   "discovery-endpoint",
+		Usage:  "OpenID Connect discovery endpoint URL",
+		Value:  "",
+		EnvVar: "PHOTOPRISM_DISCOVERY_ENDPOINT",
+	},
+	cli.StringFlag{
+		Name:   "auth-provider",
+		Usage:  "external OAuth2 / OpenID Connect Provider",
+		Value:  "",
+		EnvVar: "PHOTOPRISM_AUTH_PROVIDER",
+	},
 }

@@ -106,7 +106,7 @@ func userCreate(ctx *cli.Context) error {
 			}
 		}
 
-		if err := newUser.CreateAndValidate(conf.Settings().Users.PasswordPolicy == config.PolicyNone); err != nil {
+		if err := newUser.CreateAndValidate(conf.AuthConfig()); err != nil {
 			return err
 		}
 		return nil

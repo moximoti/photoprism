@@ -1,6 +1,8 @@
 package config
 
 import (
+	"net/url"
+	"path"
 	"regexp"
 
 	"github.com/photoprism/photoprism/pkg/rnd"
@@ -57,4 +59,55 @@ func (c *Config) PreviewToken() string {
 	}
 
 	return c.options.PreviewToken
+}
+
+type AuthConfig struct {
+	disableRegistration bool
+	passwordPolicy      string
+	authProvider        string
+	clientID            string
+	clientSecret        string
+	discoveryEndpoint   string
+	callbackUrl         string
+}
+
+const (
+	RegistrationEnabled  = "enable"
+	RegistrationDisabled = "disable"
+)
+
+// AuthConfig returns a convenient struct containing relevant authentication settings
+func (c *Config) AuthConfig() *AuthConfig {
+	u, err := url.Parse(c.Options().SiteUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	u.Path = path.Join(u.Path, "/api/v1/auth/callback")
+	return &AuthConfig{
+		disableRegistration: c.Options().DisableRegistration,
+		authProvider:        c.Options().AuthProvider,
+		clientID:            c.Options().OAuth2ClientID,
+		clientSecret:        c.Options().OAuth2ClientSecret,
+		discoveryEndpoint:   c.Options().OIDCDiscoveryEndpoint,
+		callbackUrl:         u.String(),
+	}
+}
+
+func (c *AuthConfig) ClientID() string {
+	return c.clientID
+}
+func (c *AuthConfig) ClientSecret() string {
+	return c.clientSecret
+}
+func (c *AuthConfig) AuthProvider() string {
+	return c.authProvider
+}
+func (c *AuthConfig) CallbackUrl() string {
+	return c.callbackUrl
+}
+func (c *AuthConfig) PasswordPolicy() string {
+	return c.passwordPolicy
+}
+func (c *AuthConfig) DiscoveryEndpoint() string {
+	return c.discoveryEndpoint
 }
