@@ -408,7 +408,7 @@
 
           <v-list-tile-content>
             <v-list-tile-title>
-              <translate key="Logout">Logout</translate>
+              <translate key="Logout">Logout {{ this.getUserName() }}</translate>
             </v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -535,6 +535,14 @@ export default {
     },
     logout() {
       this.$session.logout();
+    },
+    getUserName() {
+      let fullname = this.$session.getUser().FullName;
+      let username = this.$session.getUser().UserName;
+      return fullname === "" ? username : fullname;
+    },
+    getEmail() {
+      return this.$session.getUser().PrimaryEmail;
     },
   }
 };

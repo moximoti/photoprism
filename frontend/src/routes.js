@@ -100,6 +100,9 @@ export default [
     path: "/register",
     component: Register,
     meta: { title: siteTitle, auth: false },
+    // props: {
+    //   tab: "link-user",
+    // },
     beforeEnter: (to, from, next) => {
       if (session.isUser()) {
         next({ name: "home" });

@@ -1,142 +1,112 @@
 <template>
   <div class="p-page p-page-login">
-    <v-toolbar flat color="secondary" dense class="mb-3" :height="42">
+    <v-toolbar flat color="secondary" dense class="mb-0" :height="42">
       <v-toolbar-title class="subheading">
         {{ siteDescription }}
       </v-toolbar-title>
     </v-toolbar>
-    <v-card-title>
-      Registration
-    </v-card-title>
-    <v-form ref="form" dense autocomplete="off" class="p-form-login" accept-charset="UTF-8" @submit.prevent="login">
-      <v-card flat tile class="ma-2 application">
-        <v-card-actions>
-          <v-layout wrap align-top>
-            <v-flex xs12 class="pa-2">
-              <v-text-field
-                  v-model="username"
-                  required hide-details
-                  type="text"
-                  :disabled="loading"
-                  :label="$gettext('Name')"
-                  browser-autocomplete="off"
-                  color="secondary-dark"
-                  class="input-name"
-                  placeholder="username"
-              ></v-text-field>
-            </v-flex>
-            <v-flex xs12 class="pa-2">
-              <v-text-field
-                  v-model="password"
-                  required hide-details
-                  :type="showPassword ? 'text' : 'password'"
-                  :disabled="loading"
-                  :label="$gettext('Password')"
-                  browser-autocomplete="off"
-                  color="secondary-dark"
-                  placeholder="••••••••"
-                  class="input-password"
-                  :append-icon="showPassword ? 'visibility' : 'visibility_off'"
-                  @click:append="showPassword = !showPassword"
-                  @keyup.enter.native="login"
-              ></v-text-field>
-            </v-flex>
-            <v-flex xs12 class="px-2 py-3">
-              <v-btn color="primary-button"
-                     class="white--text ml-0 action-confirm"
-                     depressed
-                     :disabled="loading || !password || !username"
-                     @click.stop="login">
-                <translate>Sign in</translate>
-                <v-icon :right="!rtl" :left="rtl" dark>login</v-icon>
-              </v-btn>
-              <v-btn color="primary-button"
-                     class="white--text ml-0 action-confirm"
-                     depressed
-                     :disabled="loading"
-                     @click.stop="loginExternal">
-                <translate>Sign in with {{ authProvider }}</translate>
-                <v-icon :right="!rtl" :left="rtl" dark>login</v-icon>
-              </v-btn>
-            </v-flex>
-          </v-layout>
-        </v-card-actions>
-      </v-card>
-    </v-form>
+    <v-tabs
+        v-model="active"
+        flat
+        grow
+        touchless
+        color="secondary-light"
+        slider-color="secondary-dark"
+        :height="$vuetify.breakpoint.smAndDown ? 48 : 64"
+    >
+<!--      <v-tab v-for="(item, index) in tabs" :id="'tab-' + item.name" :key="index" :class="item.class" ripple >-->
+      <v-tab v-for="(item, index) in tabs" :id="'tab-' + item.name" :key="index" :class="item.class" ripple
+             @click="changePath(item.path)">
+        {{ item.name }}
+      </v-tab>
+      <v-tabs-items touchless>
+        <v-tab-item v-for="(item, index) in tabs" :key="index" lazy>
+          <component :is="item.component"></component>
+<!--          <div>{{ item.name }} TEXT TEXT</div>-->
+        </v-tab-item>
+      </v-tabs-items>
+    </v-tabs>
 
     <p-about-footer></p-about-footer>
   </div>
 </template>
 
 <script>
+import Login from "pages/user/login.vue";
+import Create from "pages/user/create.vue";
+function initTabs(flag, tabs) {
+  let i = 0;
+  while(i < tabs.length) {
+    if(!tabs[i][flag]) {
+      tabs.splice(i,1);
+    } else {
+      i++;
+    }
+  }
+}
+
 export default {
   name: 'Register',
+  props: {
+    tab: String,
+  },
   data() {
     const c = this.$config.values;
-    const authProviderFull = () => {
-      switch (c.authProvider) {
-        case "openid-connect": return "OpenID Connect";
-        case "github": return "Github";
-        case "google": return "Google";
-        default: return "External Provider";
-      }
-    };
+    const isDemo = this.$config.get("demo");
+    const isPublic = this.$config.get("public");
+    const tabs = [
+      {
+        'name': 'register new user',
+        'path': '/register',
+        'component': Create,
+        'public': true,
+        'admin': true,
+        'demo': true,
+        'props': {}
+      },
+      {
+        'name': 'link to existing user',
+        'path': '/register',
+        'component': Login,
+        'public': true,
+        'admin': true,
+        'demo': true,
+        'props': {}
+      },
+      // {
+      //   'name': 'login',
+      //   'path': '/login',
+      //   'component': Login,
+      //   'public': true,
+      //   'admin': true,
+      //   'demo': true,
+      // },
+    ];
+
+    if(isDemo) {
+      initTabs("demo", tabs);
+    } else if(isPublic) {
+      initTabs("public", tabs);
+    }
+
+    let active = 0;
+    if (typeof this.tab === 'string' && this.tab !== '') {
+      active = tabs.findIndex((t) => t.name === this.tab);
+    }
+
     return {
-      loading: false,
-      showPassword: false,
-      username: "",
-      password: "",
       siteDescription: c.siteDescription ? c.siteDescription : c.siteCaption,
-      authProvider: authProviderFull(),
-      nextUrl: this.$route.params.nextUrl ? this.$route.params.nextUrl : "/",
+      tabs: tabs,
+      active: active,
       rtl: this.$rtl,
     };
   },
   methods: {
-    login() {
-      if (!this.username || !this.password) {
-        return;
+    changePath: function (path) {
+      if (this.$route.path !== path) {
+        this.$router.replace(path);
       }
-
-      this.loading = true;
-      this.$session.login(this.username, this.password).then(
-        () => {
-          this.loading = false;
-          this.$router.push(this.nextUrl);
-        }
-      ).catch(() => this.loading = false);
-    },
-    loginExternal() {
-      this.loading = true;
-      let popup = window.open('api/v1/auth/external', "test");
-      const onstorage = window.onstorage;
-      window.onstorage = () => {
-        const sid = window.localStorage.getItem('session_id');
-        const data = window.localStorage.getItem('data');
-        const config = window.localStorage.getItem('config');
-        const error = window.localStorage.getItem('auth_error');
-        if (error === "authentication failed") {
-          window.localStorage.removeItem('config');
-          window.localStorage.removeItem('auth_error');
-          window.onstorage = onstorage;
-          return;
-        }
-        if (sid === null || data === null || config === null) {
-          return;
-        }
-        console.log("sid = ", sid);
-        this.$session.setId(sid);
-        this.$session.setData(JSON.parse(data));
-        this.$session.setConfig(JSON.parse(config));
-        //this.$session.sendClientInfo();
-        this.loading = false;
-        this.$router.push(this.nextUrl);
-        popup.close();
-        window.localStorage.removeItem('config');
-        window.localStorage.removeItem('auth_error');
-        window.onstorage = onstorage;
-      };
-    },
-  }
+    }
+  },
 };
 </script>
