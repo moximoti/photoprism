@@ -111,7 +111,10 @@ Api.interceptors.response.use(
     }
 
     if (code === 401) {
-      Notify.logout(errorMessage);
+      let path = window.location.pathname;
+      if (path !== "/login" && path !== "/register" && path !== "/link_user") {
+        Notify.logout(errorMessage);
+      }
     } else {
       Notify.error(errorMessage);
     }
