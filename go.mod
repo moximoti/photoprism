@@ -3,6 +3,7 @@ module github.com/photoprism/photoprism
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
 	github.com/djherbis/times v1.5.0
 	github.com/dsoprea/go-exif/v2 v2.0.0-20210428042052-dca55bf8ca15 // indirect
@@ -10,7 +11,7 @@ require (
 	github.com/dsoprea/go-heic-exif-extractor v0.0.0-20210512044107-62067e44c235
 	github.com/dsoprea/go-iptc v0.0.0-20200610044640-bc9ca208b413 // indirect
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20210512043942-b434301c6836
-	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd
+	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
 	github.com/dsoprea/go-photoshop-info-format v0.0.0-20200610045659-121dd752914d // indirect
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/dsoprea/go-tiff-image-structure v0.0.0-20210512044046-dc78da6a809b
@@ -24,7 +25,7 @@ require (
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/open-location-code/go v0.0.0-20210504205230-1796878d947c
-	github.com/gorilla/sessions v1.2.1 // indirect
+	github.com/gorilla/sessions v1.2.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/gosimple/slug v1.9.0
 	github.com/h2non/filetype v1.1.1
@@ -37,6 +38,7 @@ require (
 	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/leonelquinteros/gotext v1.5.0
+	github.com/lestrrat-go/jwx v1.2.4
 	github.com/lib/pq v1.3.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/lunixbochs/vtclean v1.0.0 // indirect

@@ -209,6 +209,7 @@ func registerRoutes(router *gin.Engine, conf *config.Config) {
 		api.Websocket(v1)
 
 		api.AuthEndpoints(v1)
+		api.UserManagement(v1)
 	}
 
 	// Configure link sharing.

@@ -5,6 +5,7 @@ type Login struct {
 	UserName string `json:"username"`
 	Password string `json:"password"`
 	Token    string `json:"token"`
+	IdToken  string `json:"idToken"`
 }
 
 func (f Login) HasToken() bool {

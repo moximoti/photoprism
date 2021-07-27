@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/photoprism/photoprism/internal/authn"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -64,6 +65,20 @@ func CreateSession(router *gin.RouterGroup) {
 			if user.InvalidPassword(f.Password) {
 				c.AbortWithStatusJSON(400, gin.H{"error": i18n.Msg(i18n.ErrInvalidCredentials)})
 				return
+			}
+
+			// Link User if ID Token is present and validated
+			if f.IdToken != "" {
+				extractedID, err := authn.ValidateAndExtractID(f.IdToken)
+				if err != nil {
+					c.AbortWithStatusJSON(400, gin.H{"error": i18n.Msg(i18n.ErrInvalidCredentials)})
+					return
+				}
+				user.ExternalUID = extractedID
+				err = user.Save()
+				if err != nil {
+					log.Errorf("Couldn't link user: %s", err.Error())
+				}
 			}
 
 			data.User = *user

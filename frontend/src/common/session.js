@@ -203,15 +203,30 @@ export default class Session {
     }
   }
 
-  login(username, password, token) {
+  login(username, password, token, idToken) {
     this.deleteId();
 
-    return Api.post("session", { username, password, token }).then((resp) => {
+    return Api.post("session", { username, password, token, idToken }).then((resp) => {
       this.setConfig(resp.data.config);
       this.setId(resp.data.id);
       this.setData(resp.data.data);
       this.sendClientInfo();
     });
+  }
+
+  register(username, password, token, fullname, email, idToken) {
+    return Api.post("users", { username, password, token, fullname, email, idToken }).then(
+      (resp) => {
+        // TODO: implement toggle for admin and email confirmation
+        let immediateLogin = true;
+        if (immediateLogin) {
+          this.setConfig(resp.data.config);
+          this.setId(resp.data.id);
+          this.setData(resp.data.data);
+          this.sendClientInfo();
+        }
+      }
+    );
   }
 
   redeemToken(token) {

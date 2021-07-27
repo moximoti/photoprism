@@ -32,8 +32,8 @@
 </template>
 
 <script>
-import Login from "pages/user/login.vue";
-import Create from "pages/user/create.vue";
+import UserLink from "pages/user/link.vue";
+import UserCreate from "pages/user/create.vue";
 function initTabs(flag, tabs) {
   let i = 0;
   while(i < tabs.length) {
@@ -49,6 +49,7 @@ export default {
   name: 'Register',
   props: {
     tab: String,
+    linkUser: Boolean,
   },
   data() {
     const c = this.$config.values;
@@ -57,36 +58,33 @@ export default {
     const tabs = [
       {
         'name': 'register new user',
-        'path': '/register',
-        'component': Create,
+        'path': '/link_user',
+        'component': UserCreate,
         'public': true,
         'admin': true,
         'demo': true,
+        'register': true,
         'props': {}
       },
       {
         'name': 'link to existing user',
-        'path': '/register',
-        'component': Login,
+        'path': '/link_user',
+        'component': UserLink,
         'public': true,
         'admin': true,
         'demo': true,
+        'register': false,
         'props': {}
       },
-      // {
-      //   'name': 'login',
-      //   'path': '/login',
-      //   'component': Login,
-      //   'public': true,
-      //   'admin': true,
-      //   'demo': true,
-      // },
     ];
 
     if(isDemo) {
       initTabs("demo", tabs);
     } else if(isPublic) {
       initTabs("public", tabs);
+    }
+    if (!this.linkUser) {
+      initTabs("register", tabs);
     }
 
     let active = 0;

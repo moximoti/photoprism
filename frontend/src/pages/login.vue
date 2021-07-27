@@ -70,6 +70,7 @@ export default {
   name: 'Login',
   data() {
     const c = this.$config.values;
+    window.localStorage.removeItem('link_user');
     const authProviderFull = () => {
       switch (c.authProvider) {
         case "openid-connect": return "OpenID Connect";
@@ -107,15 +108,39 @@ export default {
       this.loading = true;
       let popup = window.open('api/v1/auth/external', "test");
       const onstorage = window.onstorage;
+      const cleanup = () => {
+        popup.close();
+        window.localStorage.removeItem('config');
+        window.localStorage.removeItem('auth_error');
+        window.onstorage = onstorage;
+        this.loading = false;
+      };
+
       window.onstorage = () => {
         const sid = window.localStorage.getItem('session_id');
         const data = window.localStorage.getItem('data');
         const config = window.localStorage.getItem('config');
         const error = window.localStorage.getItem('auth_error');
+        const linkUser = window.localStorage.getItem('link_user');
         if (error === "authentication failed") {
           window.localStorage.removeItem('config');
           window.localStorage.removeItem('auth_error');
           window.onstorage = onstorage;
+          return;
+        }
+        if (linkUser !== null) {
+          if (this.$session.isUser()) {
+            this.localStorage.removeItem('link_user');
+            this.$router.push(this.nextUrl);
+          } else {
+            this.$router.push('/link_user');
+          }
+          cleanup();
+          return;
+        }
+        if (error !== null) {
+          // TODO: handle Error
+          cleanup();
           return;
         }
         if (sid === null || data === null || config === null) {
@@ -126,12 +151,8 @@ export default {
         this.$session.setData(JSON.parse(data));
         this.$session.setConfig(JSON.parse(config));
         //this.$session.sendClientInfo();
-        this.loading = false;
         this.$router.push(this.nextUrl);
-        popup.close();
-        window.localStorage.removeItem('config');
-        window.localStorage.removeItem('auth_error');
-        window.onstorage = onstorage;
+        cleanup();
       };
     },
   }

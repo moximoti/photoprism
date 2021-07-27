@@ -100,10 +100,27 @@ export default [
     path: "/register",
     component: Register,
     meta: { title: siteTitle, auth: false },
-    // props: {
-    //   tab: "link-user",
-    // },
     beforeEnter: (to, from, next) => {
+      if (session.isUser()) {
+        next({ name: "home" });
+      } else {
+        next();
+      }
+    },
+  },
+  {
+    name: "link_user",
+    path: "/link_user",
+    component: Register,
+    meta: { title: siteTitle, auth: false },
+    props: {
+      tab: "link-user",
+      linkUser: true,
+    },
+    beforeEnter: (to, from, next) => {
+      if (window.localStorage.getItem("link_user") === null) {
+        next({ name: "login" });
+      }
       if (session.isUser()) {
         next({ name: "home" });
       } else {

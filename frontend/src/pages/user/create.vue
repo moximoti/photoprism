@@ -5,30 +5,30 @@
         <v-layout wrap align-top>
           <v-flex xs12 class="pa-2">
             <v-text-field
+                v-model="fullname"
+                hide-details
+                type="text"
+                :disabled="loading"
+                :label="$gettext('Full Name')"
+                browser-autocomplete="off"
+                color="secondary-dark"
+                class="input-name"
+                placeholder="optional"
+            ></v-text-field>
+          </v-flex>
+          <v-flex xs12 class="pa-2">
+            <v-text-field
                 v-model="username"
                 required hide-details
                 type="text"
                 :disabled="loading"
-                :label="$gettext('Name')"
+                :label="$gettext('Username')"
                 browser-autocomplete="off"
                 color="secondary-dark"
                 class="input-name"
                 placeholder="username"
             ></v-text-field>
           </v-flex>
-<!--          <v-flex xs12 class="pa-2">-->
-<!--            <v-text-field-->
-<!--                v-model="fullname"-->
-<!--                hide-details-->
-<!--                type="text"-->
-<!--                :disabled="loading"-->
-<!--                :label="$gettext('Full Name')"-->
-<!--                browser-autocomplete="off"-->
-<!--                color="secondary-dark"-->
-<!--                class="input-name"-->
-<!--                placeholder="your name"-->
-<!--            ></v-text-field>-->
-<!--          </v-flex>-->
           <v-flex xs12 class="pa-2">
             <v-text-field
                 v-model="email"
@@ -40,9 +40,10 @@
                 color="secondary-dark"
                 class="input-name"
                 placeholder="me@example.com"
+                @keyup.enter.native="register"
             ></v-text-field>
           </v-flex>
-          <v-flex xs12 class="pa-2">
+          <v-flex xs12 class="pa-2" v-if="!linkUser">
             <v-text-field
                 v-model="password"
                 required hide-details
@@ -55,10 +56,9 @@
                 class="input-password"
                 :append-icon="showPassword ? 'visibility' : 'visibility_off'"
                 @click:append="showPassword = !showPassword"
-                @keyup.enter.native="login"
             ></v-text-field>
           </v-flex>
-          <v-flex xs12 class="pa-2">
+          <v-flex xs12 class="pa-2" v-if="!linkUser">
             <v-text-field
                 v-model="passwordConfirm"
                 required hide-details
@@ -71,15 +71,15 @@
                 class="input-password"
                 :append-icon="showPassword ? 'visibility' : 'visibility_off'"
                 @click:append="showPassword = !showPassword"
-                @keyup.enter.native="login"
+                @keyup.enter.native="register"
             ></v-text-field>
           </v-flex>
           <v-flex xs12 class="px-2 py-3">
             <v-btn color="primary-button"
                    class="white--text ml-0 action-confirm"
                    depressed
-                   :disabled="loading || !password || !username"
-                   @click.stop="login">
+                   :disabled="!username || !email"
+                   @click.stop="register">
               <translate>Complete Registration</translate>
               <v-icon :right="!rtl" :left="rtl" dark>login</v-icon>
             </v-btn>
@@ -95,10 +95,43 @@
 export default {
   name: 'UserCreate',
   data() {
+    const linkUser = window.localStorage.getItem('link_user');
+    const userData = JSON.parse(linkUser);
+
     return {
+      linkUser: !!linkUser,
+      email: userData?.Email,
+      fullname: userData?.Name,
+      username: userData?.NickName,
+      password: "",
+      showPassword: false,
+      loading: false,
+      nextUrl: this.$route.params.nextUrl ? this.$route.params.nextUrl : "/",
+      rtl: this.$rtl,
     };
   },
   methods: {
+    register() {
+      if (this.linkUser) {
+        this.$session.register(this.username, null, null, this.fullname, this.email, this.getIdToken())
+          .then(() => {
+            this.loading = false;
+            window.localStorage.removeItem('link_user');
+            this.$router.push(this.nextUrl);
+          });
+      }
+    },
+    getIdToken() {
+      const linkUser = window.localStorage.getItem('link_user');
+      if (linkUser === null) {
+        return null;
+      }
+      const token = JSON.parse(linkUser).IdToken;
+      if (!token) {
+        return null;
+      }
+      return token;
+    }
   },
 };
 </script>

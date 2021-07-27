@@ -72,12 +72,47 @@
 <script>
 
 export default {
-  name: 'UserLogin',
+  name: 'UserLink',
   data() {
+    const linkUser = window.localStorage.getItem('link_user');
+    const userData = linkUser ? JSON.parse(linkUser) : null;
+
     return {
+      linkUser: !!userData,
+      username: "",
+      password: "",
+      showPassword: false,
+      loading: false,
+      nextUrl: "/",
+      rtl: this.$rtl,
     };
   },
   methods: {
+    login() {
+      if (!this.username || !this.password) {
+        return;
+      }
+
+      this.loading = true;
+      this.$session.login(this.username, this.password, null, this.getIdToken()).then(
+        () => {
+          this.loading = false;
+          window.localStorage.removeItem('link_user');
+          this.$router.push(this.nextUrl);
+        }
+      ).catch(() => this.loading = false);
+    },
+    getIdToken() {
+      const linkUser = window.localStorage.getItem('link_user');
+      if (linkUser === null) {
+        return null;
+      }
+      const token = JSON.parse(linkUser).IdToken;
+      if (!token) {
+        return null;
+      }
+      return token;
+    }
   },
 };
 </script>

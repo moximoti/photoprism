@@ -12,6 +12,11 @@ import (
 // GET /api/v1/auth/external
 func AuthEndpoints(router *gin.RouterGroup) {
 	conf := service.Config()
+
+	ap := conf.AuthConfig().AuthProvider()
+	if ap == authn.ProviderNone || ap == "" {
+		return
+	}
 	if err := authn.Init(conf.AuthConfig()); err != nil {
 		log.Errorf(err.Error())
 	}
@@ -28,21 +33,28 @@ func AuthEndpoints(router *gin.RouterGroup) {
 		userInfo, err := authn.FinalizeAuthFlow(c.Writer, c.Request)
 		if err != nil {
 			log.Errorf(err.Error())
+			c.HTML(http.StatusUnauthorized, "callback.tmpl", gin.H{
+				"status": "error",
+				"error":  err.Error(),
+			})
 			return
 		}
 		log.Infof("UserInfo: %s %s", userInfo.Email, userInfo.UserID)
+		log.Debugf("IDToken: %s", userInfo.IDToken)
+		log.Debugf("AToken: %s", userInfo.AccessToken)
+
 		user := entity.FindUserByExternalUID(userInfo.UserID)
 		if user == nil {
-			// TODO: redirect to Register/LinkUserFlow, remove mock data
-			user = entity.FindUserByName("timo008")
-			log.Infof("no user found. using %s", user.UserName)
-			log.Infof("!!! redirect to registration not implemented yet !!!")
-
-			c.Redirect(http.StatusTemporaryRedirect, "/register?email=xyz&flowid=random")
-			//c.HTML(http.StatusOK, "callback.tmpl", gin.H{
-			//	"status": "ok",
-			//	"config": conf.UserConfig(),
-			//})
+			c.HTML(http.StatusOK, "callback.tmpl", gin.H{
+				"status": "linkUser",
+				"linkUser": map[string]string{
+					"NickName": userInfo.NickName,
+					"Name":     userInfo.Name,
+					"Email":    userInfo.Email,
+					"IdToken":  userInfo.IDToken,
+				},
+				"config": conf.UserConfig(),
+			})
 			return
 		}
 		log.Infof("user '%s' logged in", user.UserName)
