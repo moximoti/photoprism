@@ -6,7 +6,7 @@
 
         <v-toolbar-side-icon v-if="auth" class="nav-show"></v-toolbar-side-icon>
 
-        <v-toolbar-title class="nav-title">{{ page.title }}</v-toolbar-title>
+        <router-link to="/"><v-toolbar-title class="nav-title white--text">{{ page.title }}</v-toolbar-title></router-link>
 
         <v-spacer></v-spacer>
 
