@@ -106,7 +106,7 @@ func userCreate(ctx *cli.Context) error {
 			}
 		}
 
-		if err := newUser.CreateAndValidate(conf.AuthConfig()); err != nil {
+		if err := newUser.CreateAndValidate(conf); err != nil {
 			return err
 		}
 		return nil

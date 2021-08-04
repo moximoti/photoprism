@@ -144,6 +144,7 @@ func (c *Config) Init() error {
 
 	c.initSettings()
 	c.initHub()
+	c.initMail()
 
 	c.Propagate()
 

@@ -100,7 +100,7 @@ func UserManagement(router *gin.RouterGroup) {
 			log.Infof("user sucessfully registered and linked: %s", user.UserName)
 
 		} else {
-			err := user.CreateAndValidate(conf.AuthConfig())
+			err := user.CreateAndValidate(conf)
 			if err != nil {
 				c.Error(err)
 				return

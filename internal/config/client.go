@@ -12,52 +12,53 @@ import (
 
 // ClientConfig represents HTTP client / Web UI config options.
 type ClientConfig struct {
-	Mode            string              `json:"mode"`
-	Name            string              `json:"name"`
-	Version         string              `json:"version"`
-	Copyright       string              `json:"copyright"`
-	Flags           string              `json:"flags"`
-	BaseUri         string              `json:"baseUri"`
-	StaticUri       string              `json:"staticUri"`
-	ApiUri          string              `json:"apiUri"`
-	ContentUri      string              `json:"contentUri"`
-	SiteUrl         string              `json:"siteUrl"`
-	SitePreview     string              `json:"sitePreview"`
-	SiteTitle       string              `json:"siteTitle"`
-	SiteCaption     string              `json:"siteCaption"`
-	SiteDescription string              `json:"siteDescription"`
-	SiteAuthor      string              `json:"siteAuthor"`
-	Debug           bool                `json:"debug"`
-	Test            bool                `json:"test"`
-	Demo            bool                `json:"demo"`
-	Sponsor         bool                `json:"sponsor"`
-	ReadOnly        bool                `json:"readonly"`
-	UploadNSFW      bool                `json:"uploadNSFW"`
-	Public          bool                `json:"public"`
-	Experimental    bool                `json:"experimental"`
-	AlbumCategories []string            `json:"albumCategories"`
-	Albums          []entity.Album      `json:"albums"`
-	Cameras         []entity.Camera     `json:"cameras"`
-	Lenses          []entity.Lens       `json:"lenses"`
-	Countries       []entity.Country    `json:"countries"`
-	Thumbs          []Thumb             `json:"thumbs"`
-	Status          string              `json:"status"`
-	MapKey          string              `json:"mapKey"`
-	DownloadToken   string              `json:"downloadToken"`
-	PreviewToken    string              `json:"previewToken"`
-	JSHash          string              `json:"jsHash"`
-	CSSHash         string              `json:"cssHash"`
-	ManifestHash    string              `json:"manifestHash"`
-	Settings        Settings            `json:"settings"`
-	Disable         ClientDisable       `json:"disable"`
-	Count           ClientCounts        `json:"count"`
-	Pos             ClientPosition      `json:"pos"`
-	Years           []int               `json:"years"`
-	Colors          []map[string]string `json:"colors"`
-	Categories      []CategoryLabel     `json:"categories"`
-	Clip            int                 `json:"clip"`
-	Server          RuntimeInfo         `json:"server"`
-	AuthProvider    string              `json:"authProvider"`
+	Mode                 string              `json:"mode"`
+	Name                 string              `json:"name"`
+	Version              string              `json:"version"`
+	Copyright            string              `json:"copyright"`
+	Flags                string              `json:"flags"`
+	BaseUri              string              `json:"baseUri"`
+	StaticUri            string              `json:"staticUri"`
+	ApiUri               string              `json:"apiUri"`
+	ContentUri           string              `json:"contentUri"`
+	SiteUrl              string              `json:"siteUrl"`
+	SitePreview          string              `json:"sitePreview"`
+	SiteTitle            string              `json:"siteTitle"`
+	SiteCaption          string              `json:"siteCaption"`
+	SiteDescription      string              `json:"siteDescription"`
+	SiteAuthor           string              `json:"siteAuthor"`
+	Debug                bool                `json:"debug"`
+	Test                 bool                `json:"test"`
+	Demo                 bool                `json:"demo"`
+	Sponsor              bool                `json:"sponsor"`
+	ReadOnly             bool                `json:"readonly"`
+	UploadNSFW           bool                `json:"uploadNSFW"`
+	Public               bool                `json:"public"`
+	Experimental         bool                `json:"experimental"`
+	AlbumCategories      []string            `json:"albumCategories"`
+	Albums               []entity.Album      `json:"albums"`
+	Cameras              []entity.Camera     `json:"cameras"`
+	Lenses               []entity.Lens       `json:"lenses"`
+	Countries            []entity.Country    `json:"countries"`
+	Thumbs               []Thumb             `json:"thumbs"`
+	Status               string              `json:"status"`
+	MapKey               string              `json:"mapKey"`
+	DownloadToken        string              `json:"downloadToken"`
+	PreviewToken         string              `json:"previewToken"`
+	JSHash               string              `json:"jsHash"`
+	CSSHash              string              `json:"cssHash"`
+	ManifestHash         string              `json:"manifestHash"`
+	Settings             Settings            `json:"settings"`
+	Disable              ClientDisable       `json:"disable"`
+	Count                ClientCounts        `json:"count"`
+	Pos                  ClientPosition      `json:"pos"`
+	Years                []int               `json:"years"`
+	Colors               []map[string]string `json:"colors"`
+	Categories           []CategoryLabel     `json:"categories"`
+	Clip                 int                 `json:"clip"`
+	Server               RuntimeInfo         `json:"server"`
+	AuthProvider         string              `json:"authProvider"`
+	RegistrationDisabled bool                `json:"registrationDisabled"`
 }
 
 // ClientDisable represents disabled client features a user can't turn back on.
@@ -170,39 +171,40 @@ func (c *Config) PublicConfig() ClientConfig {
 			HeifConvert: true,
 			FFmpeg:      true,
 		},
-		Flags:           strings.Join(c.Flags(), " "),
-		Mode:            "public",
-		Name:            c.Name(),
-		BaseUri:         c.BaseUri(""),
-		StaticUri:       c.StaticUri(),
-		ApiUri:          c.ApiUri(),
-		ContentUri:      c.ContentUri(),
-		SiteUrl:         c.SiteUrl(),
-		SitePreview:     c.SitePreview(),
-		SiteTitle:       c.SiteTitle(),
-		SiteCaption:     c.SiteCaption(),
-		SiteDescription: c.SiteDescription(),
-		SiteAuthor:      c.SiteAuthor(),
-		Version:         c.Version(),
-		Copyright:       c.Copyright(),
-		Debug:           c.Debug(),
-		Test:            c.Test(),
-		Demo:            c.Demo(),
-		Sponsor:         c.Sponsor(),
-		ReadOnly:        c.ReadOnly(),
-		Public:          c.Public(),
-		Experimental:    c.Experimental(),
-		Status:          "",
-		MapKey:          "",
-		Thumbs:          Thumbs,
-		Colors:          colors.All.List(),
-		JSHash:          fs.Checksum(c.BuildPath() + "/app.js"),
-		CSSHash:         fs.Checksum(c.BuildPath() + "/app.css"),
-		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
-		Clip:            txt.ClipDefault,
-		PreviewToken:    "public",
-		DownloadToken:   "public",
-		AuthProvider:    c.AuthConfig().AuthProvider(),
+		Flags:                strings.Join(c.Flags(), " "),
+		Mode:                 "public",
+		Name:                 c.Name(),
+		BaseUri:              c.BaseUri(""),
+		StaticUri:            c.StaticUri(),
+		ApiUri:               c.ApiUri(),
+		ContentUri:           c.ContentUri(),
+		SiteUrl:              c.SiteUrl(),
+		SitePreview:          c.SitePreview(),
+		SiteTitle:            c.SiteTitle(),
+		SiteCaption:          c.SiteCaption(),
+		SiteDescription:      c.SiteDescription(),
+		SiteAuthor:           c.SiteAuthor(),
+		Version:              c.Version(),
+		Copyright:            c.Copyright(),
+		Debug:                c.Debug(),
+		Test:                 c.Test(),
+		Demo:                 c.Demo(),
+		Sponsor:              c.Sponsor(),
+		ReadOnly:             c.ReadOnly(),
+		Public:               c.Public(),
+		Experimental:         c.Experimental(),
+		Status:               "",
+		MapKey:               "",
+		Thumbs:               Thumbs,
+		Colors:               colors.All.List(),
+		JSHash:               fs.Checksum(c.BuildPath() + "/app.js"),
+		CSSHash:              fs.Checksum(c.BuildPath() + "/app.css"),
+		ManifestHash:         fs.Checksum(c.TemplatesPath() + "/manifest.json"),
+		Clip:                 txt.ClipDefault,
+		PreviewToken:         "public",
+		DownloadToken:        "public",
+		AuthProvider:         c.AuthProvider(),
+		RegistrationDisabled: c.RegistrationDisabled(),
 	}
 
 	return result
@@ -232,40 +234,41 @@ func (c *Config) GuestConfig() ClientConfig {
 			HeifConvert: true,
 			FFmpeg:      true,
 		},
-		Flags:           "readonly public shared",
-		Mode:            "guest",
-		Name:            c.Name(),
-		BaseUri:         c.BaseUri(""),
-		StaticUri:       c.StaticUri(),
-		ApiUri:          c.ApiUri(),
-		ContentUri:      c.ContentUri(),
-		SiteUrl:         c.SiteUrl(),
-		SitePreview:     c.SitePreview(),
-		SiteTitle:       c.SiteTitle(),
-		SiteCaption:     c.SiteCaption(),
-		SiteDescription: c.SiteDescription(),
-		SiteAuthor:      c.SiteAuthor(),
-		Version:         c.Version(),
-		Copyright:       c.Copyright(),
-		Debug:           c.Debug(),
-		Test:            c.Test(),
-		Demo:            c.Demo(),
-		Sponsor:         c.Sponsor(),
-		ReadOnly:        true,
-		UploadNSFW:      c.UploadNSFW(),
-		Public:          true,
-		Experimental:    false,
-		Colors:          colors.All.List(),
-		Thumbs:          Thumbs,
-		Status:          c.Hub().Status,
-		MapKey:          c.Hub().MapKey(),
-		DownloadToken:   c.DownloadToken(),
-		PreviewToken:    c.PreviewToken(),
-		JSHash:          fs.Checksum(c.BuildPath() + "/share.js"),
-		CSSHash:         fs.Checksum(c.BuildPath() + "/share.css"),
-		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
-		Clip:            txt.ClipDefault,
-		AuthProvider:    c.AuthConfig().AuthProvider(),
+		Flags:                "readonly public shared",
+		Mode:                 "guest",
+		Name:                 c.Name(),
+		BaseUri:              c.BaseUri(""),
+		StaticUri:            c.StaticUri(),
+		ApiUri:               c.ApiUri(),
+		ContentUri:           c.ContentUri(),
+		SiteUrl:              c.SiteUrl(),
+		SitePreview:          c.SitePreview(),
+		SiteTitle:            c.SiteTitle(),
+		SiteCaption:          c.SiteCaption(),
+		SiteDescription:      c.SiteDescription(),
+		SiteAuthor:           c.SiteAuthor(),
+		Version:              c.Version(),
+		Copyright:            c.Copyright(),
+		Debug:                c.Debug(),
+		Test:                 c.Test(),
+		Demo:                 c.Demo(),
+		Sponsor:              c.Sponsor(),
+		ReadOnly:             true,
+		UploadNSFW:           c.UploadNSFW(),
+		Public:               true,
+		Experimental:         false,
+		Colors:               colors.All.List(),
+		Thumbs:               Thumbs,
+		Status:               c.Hub().Status,
+		MapKey:               c.Hub().MapKey(),
+		DownloadToken:        c.DownloadToken(),
+		PreviewToken:         c.PreviewToken(),
+		JSHash:               fs.Checksum(c.BuildPath() + "/share.js"),
+		CSSHash:              fs.Checksum(c.BuildPath() + "/share.css"),
+		ManifestHash:         fs.Checksum(c.TemplatesPath() + "/manifest.json"),
+		Clip:                 txt.ClipDefault,
+		AuthProvider:         c.AuthProvider(),
+		RegistrationDisabled: c.RegistrationDisabled(),
 	}
 
 	return result
@@ -288,41 +291,42 @@ func (c *Config) UserConfig() ClientConfig {
 			HeifConvert: c.DisableHeifConvert(),
 			FFmpeg:      c.DisableFFmpeg(),
 		},
-		Flags:           strings.Join(c.Flags(), " "),
-		Mode:            "user",
-		Name:            c.Name(),
-		BaseUri:         c.BaseUri(""),
-		StaticUri:       c.StaticUri(),
-		ApiUri:          c.ApiUri(),
-		ContentUri:      c.ContentUri(),
-		SiteUrl:         c.SiteUrl(),
-		SitePreview:     c.SitePreview(),
-		SiteTitle:       c.SiteTitle(),
-		SiteCaption:     c.SiteCaption(),
-		SiteDescription: c.SiteDescription(),
-		SiteAuthor:      c.SiteAuthor(),
-		Version:         c.Version(),
-		Copyright:       c.Copyright(),
-		Debug:           c.Debug(),
-		Test:            c.Test(),
-		Demo:            c.Demo(),
-		Sponsor:         c.Sponsor(),
-		ReadOnly:        c.ReadOnly(),
-		UploadNSFW:      c.UploadNSFW(),
-		Public:          c.Public(),
-		Experimental:    c.Experimental(),
-		Colors:          colors.All.List(),
-		Thumbs:          Thumbs,
-		Status:          c.Hub().Status,
-		MapKey:          c.Hub().MapKey(),
-		DownloadToken:   c.DownloadToken(),
-		PreviewToken:    c.PreviewToken(),
-		JSHash:          fs.Checksum(c.BuildPath() + "/app.js"),
-		CSSHash:         fs.Checksum(c.BuildPath() + "/app.css"),
-		ManifestHash:    fs.Checksum(c.TemplatesPath() + "/manifest.json"),
-		Clip:            txt.ClipDefault,
-		Server:          NewRuntimeInfo(),
-		AuthProvider:    c.AuthConfig().AuthProvider(),
+		Flags:                strings.Join(c.Flags(), " "),
+		Mode:                 "user",
+		Name:                 c.Name(),
+		BaseUri:              c.BaseUri(""),
+		StaticUri:            c.StaticUri(),
+		ApiUri:               c.ApiUri(),
+		ContentUri:           c.ContentUri(),
+		SiteUrl:              c.SiteUrl(),
+		SitePreview:          c.SitePreview(),
+		SiteTitle:            c.SiteTitle(),
+		SiteCaption:          c.SiteCaption(),
+		SiteDescription:      c.SiteDescription(),
+		SiteAuthor:           c.SiteAuthor(),
+		Version:              c.Version(),
+		Copyright:            c.Copyright(),
+		Debug:                c.Debug(),
+		Test:                 c.Test(),
+		Demo:                 c.Demo(),
+		Sponsor:              c.Sponsor(),
+		ReadOnly:             c.ReadOnly(),
+		UploadNSFW:           c.UploadNSFW(),
+		Public:               c.Public(),
+		Experimental:         c.Experimental(),
+		Colors:               colors.All.List(),
+		Thumbs:               Thumbs,
+		Status:               c.Hub().Status,
+		MapKey:               c.Hub().MapKey(),
+		DownloadToken:        c.DownloadToken(),
+		PreviewToken:         c.PreviewToken(),
+		JSHash:               fs.Checksum(c.BuildPath() + "/app.js"),
+		CSSHash:              fs.Checksum(c.BuildPath() + "/app.css"),
+		ManifestHash:         fs.Checksum(c.TemplatesPath() + "/manifest.json"),
+		Clip:                 txt.ClipDefault,
+		Server:               NewRuntimeInfo(),
+		AuthProvider:         c.AuthProvider(),
+		RegistrationDisabled: c.RegistrationDisabled(),
 	}
 
 	c.Db().

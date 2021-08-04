@@ -61,53 +61,38 @@ func (c *Config) PreviewToken() string {
 	return c.options.PreviewToken
 }
 
-type AuthConfig struct {
-	disableRegistration bool
-	passwordPolicy      string
-	authProvider        string
-	clientID            string
-	clientSecret        string
-	discoveryEndpoint   string
-	callbackUrl         string
+// Satisfying config interfaces for relevant authentication settings
+
+func (c *Config) ClientID() string {
+	return c.Options().OAuth2ClientID
 }
-
-const (
-	RegistrationEnabled  = "enable"
-	RegistrationDisabled = "disable"
-)
-
-// AuthConfig returns a convenient struct containing relevant authentication settings
-func (c *Config) AuthConfig() *AuthConfig {
-	u, err := url.Parse(c.Options().SiteUrl)
+func (c *Config) ClientSecret() string {
+	return c.Options().OAuth2ClientSecret
+}
+func (c *Config) AuthProvider() string {
+	return c.Options().AuthProvider
+}
+func (c *Config) CallbackUrl() string {
+	u, err := url.Parse(c.SiteUrl())
 	if err != nil {
 		log.Fatal(err)
 	}
 	u.Path = path.Join(u.Path, "/api/v1/auth/callback")
-	return &AuthConfig{
-		disableRegistration: c.Options().DisableRegistration,
-		authProvider:        c.Options().AuthProvider,
-		clientID:            c.Options().OAuth2ClientID,
-		clientSecret:        c.Options().OAuth2ClientSecret,
-		discoveryEndpoint:   c.Options().OIDCDiscoveryEndpoint,
-		callbackUrl:         u.String(),
-	}
+	return u.String()
+}
+func (c *Config) PasswordPolicy() string {
+	panic("not implemented")
+}
+func (c *Config) DiscoveryEndpoint() string {
+	return c.Options().OIDCDiscoveryEndpoint
 }
 
-func (c *AuthConfig) ClientID() string {
-	return c.clientID
+func (c *Config) RegistrationDisabled() bool {
+	return c.Options().DisableRegistration
 }
-func (c *AuthConfig) ClientSecret() string {
-	return c.clientSecret
+func (c *Config) AdminConfirmationEnabled() bool {
+	return c.Options().AdminConfirmation
 }
-func (c *AuthConfig) AuthProvider() string {
-	return c.authProvider
-}
-func (c *AuthConfig) CallbackUrl() string {
-	return c.callbackUrl
-}
-func (c *AuthConfig) PasswordPolicy() string {
-	return c.passwordPolicy
-}
-func (c *AuthConfig) DiscoveryEndpoint() string {
-	return c.discoveryEndpoint
+func (c *Config) EmailConfirmationEnabled() bool {
+	return c.Options().EmailConfirmation
 }

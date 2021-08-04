@@ -434,3 +434,19 @@ func (m *User) isPasswordSecure(conf userConf) bool {
 		return false
 	}
 }
+
+func (m User) Name() string {
+	return m.FullName
+}
+
+func (m User) Username() string {
+	return m.UserName
+}
+
+func (m User) Email() string {
+	return m.PrimaryEmail
+}
+
+func (m *User) GenerateEmailActivateCode() string {
+	return "randomstring"
+}

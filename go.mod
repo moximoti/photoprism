@@ -31,6 +31,7 @@ require (
 	github.com/h2non/filetype v1.1.1
 	github.com/jinzhu/gorm v1.9.16
 	github.com/jinzhu/inflection v1.0.0
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/karrick/godirwalk v1.16.1
@@ -49,6 +50,7 @@ require (
 	github.com/melihmucuk/geocache v0.0.0-20160621165317-521b336a001c
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/paulmach/go.geojson v1.4.0
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -56,6 +58,7 @@ require (
 	github.com/sevlyar/go-daemon v0.1.5
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
+	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/studio-b12/gowebdav v0.0.0-20210630100626-7ff61aa87be8
 	github.com/tensorflow/tensorflow v1.15.2
@@ -72,6 +75,7 @@ require (
 	gopkg.in/photoprism/go-tz.v2 v2.1.1
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	jaytaylor.com/html2text v0.0.0-20200412013138-3577fbdbcff7
 )
 
 go 1.16

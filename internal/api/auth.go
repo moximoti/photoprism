@@ -9,17 +9,33 @@ import (
 	"net/http"
 )
 
-// GET /api/v1/auth/external
+// GET /api/v1/auth/
 func AuthEndpoints(router *gin.RouterGroup) {
 	conf := service.Config()
 
-	ap := conf.AuthConfig().AuthProvider()
+	ap := conf.AuthProvider()
 	if ap == authn.ProviderNone || ap == "" {
 		return
 	}
-	if err := authn.Init(conf.AuthConfig()); err != nil {
+	if err := authn.Init(conf); err != nil {
 		log.Errorf(err.Error())
 	}
+
+	router.GET("/auth/reset_password", func(c *gin.Context) {
+		_ = c.Query("code")
+		_ = c.Query("username")
+		// TODO user.resetPassword(code)
+		// and implement frontend success/error message
+		c.Redirect(http.StatusTemporaryRedirect, "/login?msg=password_success")
+	})
+
+	router.GET("/auth/activate_user", func(c *gin.Context) {
+		_ = c.Query("code")
+		_ = c.Query("username")
+		// TODO user.activate(code)
+		// and implement frontend success/error message
+		c.Redirect(http.StatusTemporaryRedirect, "/login?msg=activation_error")
+	})
 
 	router.GET("/auth/external", func(c *gin.Context) {
 		err := authn.StartAuthFlow(c.Writer, c.Request)
@@ -70,46 +86,4 @@ func AuthEndpoints(router *gin.RouterGroup) {
 		})
 
 	})
-	//router.GET("/auth/callback", func(c *gin.Context) {
-	//	//clientConfig := conf.PublicConfig()
-	//	//randomIdentifier := "fsado8yghtfds9hy5r"
-	//	st := c.Query("state") //c.PostForm("state")
-	//	log.Infof("State from Callback %s", st)
-	//	if st != authn.OauthStateString {
-	//		log.Errorf("callback not valid")
-	//	}
-	//	token, err := authn.OauthConfig.Exchange(c, c.Query("code"))
-	//
-	//	if err != nil {
-	//		log.Errorf("couldn't get token")
-	//	}
-	//	log.Infof("Access Token\n%s\n", token.AccessToken)
-	//	log.Infof("Refresh Token\n%s\n", token.RefreshToken)
-	//	log.Infof("ID Token\n%s\n", token.Extra("id_token"))
-	//	log.Infof("Token valid\n%v\n", token.Valid())
-	//
-	//	client := &http.Client{}
-	//	req, _ := http.NewRequest(http.MethodGet, "https://keycloak.timovolkmann.de/auth/realms/master/protocol/openid-connect/userinfo", nil)
-	//	req.Header.Add("Authorization", "Bearer "+token.AccessToken)
-	//	//token.SetAuthHeader(req)
-	//	res, err := client.Do(req)
-	//	if err != nil {
-	//		log.Errorf("UserInfo: %s", err)
-	//	}
-	//	defer res.Body.Close()
-	//	contents, _ := ioutil.ReadAll(res.Body)
-	//	log.Infof("UserInfo: %s", contents)
-	//
-	//	// if token.Valid() then retrieve User with matching external UID
-	//	// if token not valid, show error message
-	//	// if no user found start linkUser/newUser flow by setting flag in localstorage
-	//	// if user found return new session, set it in browser localstorage and close popup
-	//	var data = session.Data{}
-	//	data.User = *entity.FindUserByName("timo008")
-	//	id := service.Session().Create(data)
-	//
-	//	//c.Data(http.StatusOK, "application/json", contents)
-	//	//clientConfig := conf.PublicConfig()
-	//	c.HTML(http.StatusOK, "callback.tmpl", gin.H{"status": "ok", "id": id, "data": data, "config": conf.UserConfig()})
-	//})
 }
